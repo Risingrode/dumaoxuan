@@ -1035,22 +1035,29 @@ function injectAnnotations(html, annData) {
     card.className = 'ann-card';
     card.innerHTML = buildAnnCard(ann);
     wrapper.appendChild(card);
-
-    // Click to toggle
-    p.addEventListener('click', () => {
-      // Close other open ones
-      document.querySelectorAll('.para-block.has-ann.open').forEach(el => {
-        if (el !== wrapper) el.classList.remove('open');
-      });
-      wrapper.classList.toggle('open');
-      if (wrapper.classList.contains('open')) {
-        wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
-    });
+    // NOTE: do NOT add event listeners here — they are lost when
+    // container.innerHTML is serialized back to a string and reassigned
+    // to artWrap.innerHTML. Use the delegated listener below instead.
   });
 
   return container.innerHTML;
 }
+
+// Single delegated click handler — survives innerHTML replacement
+document.getElementById('artWrap').addEventListener('click', e => {
+  const p = e.target.closest('p');
+  if (!p) return;
+  const wrapper = p.parentElement;
+  if (!wrapper?.classList.contains('has-ann')) return;
+
+  document.querySelectorAll('.para-block.has-ann.open').forEach(el => {
+    if (el !== wrapper) el.classList.remove('open');
+  });
+  wrapper.classList.toggle('open');
+  if (wrapper.classList.contains('open')) {
+    wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+});
 
 function buildAnnCard(ann) {
   let html = '';
