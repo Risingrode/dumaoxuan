@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>读毛选 — 毛泽东选集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Variables ─────────────────────────────────────── */
+:root {
+  --sidebar-w: 264px;
+  --header-h: 52px;
+
+  --bg:           #faf7f2;
+  --content-bg:   #faf7f2;
+  --sidebar-bg:   #f0ebe0;
+  --sidebar-hov:  #e6dfd2;
+  --border:       #d8cec0;
+  --sidebar-bdr:  #ccc3b5;
+
+  --text:         #2c2820;
+  --text-2:       #6b5f52;
+  --text-3:       #9b8e80;
+
+  --red:          #9b2335;
+  --red-l:        #b8364a;
+  --red-dim:      rgba(155,35,53,.15);
+
+  --hdr-bg:       #8b1c2e;
+  --hdr-text:     #fff;
+  --hdr-sub:      rgba(255,255,255,.65);
+
+  --bq-bg:        #ede8df;
+  --bq-bdr:       #9b2335;
+  --hr:           #d0c8b8;
+
+  --shadow:       rgba(0,0,0,.12);
+  --reading-sz:   17px;
+
+  /* Annotation colours */
+  --ann-bg:       #fdf6e8;
+  --ann-bdr:      #c8a84b;
+  --ann-note-bg:  #fff9ee;
+  --ann-hist-bg:  #eef4fd;
+  --ann-story-bg: #f0faf0;
+  --ann-para-bdr: rgba(200,168,75,.35);
+}
+
+[data-theme="dark"] {
+  --bg:           #181613;
+  --content-bg:   #181613;
+  --sidebar-bg:   #110f0d;
+  --sidebar-hov:  #1e1a16;
+  --border:       #2c2620;
+  --sidebar-bdr:  #231f1a;
+
+  --text:         #ddd4c0;
+  --text-2:       #9e9080;
+  --text-3:       #6a5e50;
+
+  --red:          #c44055;
+  --red-l:        #d85568;
+  --red-dim:      rgba(196,64,85,.2);
+
+  --hdr-bg:       #0e0b09;
+  --hdr-text:     #e8ddd0;
+  --hdr-sub:      rgba(232,221,208,.55);
+
+  --bq-bg:        #1e1a15;
+  --bq-bdr:       #c44055;
+  --hr:           #2c2620;
+
+  --shadow:       rgba(0,0,0,.5);
+
+  --ann-bg:       #1e1a10;
+  --ann-bdr:      #8a7030;
+  --ann-note-bg:  #221e11;
+  --ann-hist-bg:  #111c2a;
+  --ann-story-bg: #0f1e11;
+  --ann-para-bdr: rgba(138,112,48,.4);
+}
+
+/* ── Reset ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Noto Sans SC','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.6;
+  transition:background .25s,color .25s;
+}
+button{font-family:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+/* ── Header ────────────────────────────────────────── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--header-h);
+  background:var(--hdr-bg);
+  color:var(--hdr-text);
+  display:flex;align-items:center;
+  padding:0 14px;
+  z-index:200;
+  box-shadow:0 1px 6px var(--shadow);
+}
+
+.hdr-menu{
+  display:none;
+  background:transparent;border:none;
+  color:inherit;font-size:20px;
+  padding:4px 8px;margin-right:6px;
+  border-radius:4px;
+  transition:background .15s;
+}
+.hdr-menu:hover{background:rgba(255,255,255,.15)}
+
+.hdr-brand{display:flex;align-items:center;gap:10px}
+.hdr-star{font-size:24px;line-height:1;opacity:.9}
+.hdr-name{
+  font-family:'Noto Serif SC',serif;
+  font-size:19px;font-weight:700;
+  letter-spacing:.12em;
+}
+.hdr-sub{
+  font-size:11px;
+  color:var(--hdr-sub);
+  letter-spacing:.06em;
+  margin-top:1px;
+}
+.hdr-gap{flex:1}
+.hdr-ctrls{display:flex;align-items:center;gap:6px}
+
+.font-grp{
+  display:flex;align-items:center;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:5px;overflow:hidden;
+}
+.font-grp button{
+  background:none;border:none;
+  color:var(--hdr-text);
+  padding:4px 9px;font-size:12px;
+  transition:background .15s;
+  opacity:.85;
+}
+.font-grp button:hover{background:rgba(255,255,255,.2);opacity:1}
+
+.theme-btn{
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.2);
+  color:var(--hdr-text);
+  padding:5px 12px;border-radius:5px;
+  font-size:12px;
+  transition:background .15s;
+  white-space:nowrap;
+}
+.theme-btn:hover{background:rgba(255,255,255,.2)}
+
+/* ── Sidebar ───────────────────────────────────────── */
+.sidebar{
+  position:fixed;
+  top:var(--header-h);left:0;
+  width:var(--sidebar-w);
+  height:calc(100vh - var(--header-h));
+  background:var(--sidebar-bg);
+  border-right:1px solid var(--sidebar-bdr);
+  display:flex;flex-direction:column;
+  z-index:150;
+  transition:transform .28s cubic-bezier(.4,0,.2,1),background .25s;
+}
+
+.sidebar-search{
+  padding:10px 10px 8px;
+  border-bottom:1px solid var(--sidebar-bdr);
+  background:var(--sidebar-bg);
+  flex-shrink:0;
+}
+.search-box{
+  width:100%;
+  padding:7px 10px;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:5px;
+  font-size:13px;color:var(--text);
+  outline:none;
+  transition:border-color .2s;
+}
+.search-box::placeholder{color:var(--text-3)}
+.search-box:focus{border-color:var(--red)}
+
+.sidebar-stat{
+  padding:6px 12px;
+  font-size:11px;color:var(--text-2);
+  border-bottom:1px solid var(--sidebar-bdr);
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+}
+.stat-bar{
+  flex:1;height:3px;
+  background:var(--border);border-radius:2px;overflow:hidden;
+}
+.stat-fill{
+  height:100%;background:var(--red);
+  border-radius:2px;
+  transition:width .4s;
+}
+
+.toc-scroll{
+  overflow-y:auto;
+  flex:1;
+  padding:4px 0 20px;
+}
+.toc-scroll::-webkit-scrollbar{width:3px}
+.toc-scroll::-webkit-scrollbar-track{background:transparent}
+.toc-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* Volume */
+.vol-item{}
+.vol-hdr{
+  display:flex;align-items:flex-start;
+  padding:9px 10px;
+  cursor:pointer;
+  gap:7px;
+  transition:background .15s;
+  user-select:none;
+}
+.vol-hdr:hover{background:var(--sidebar-hov)}
+.vol-arrow{
+  font-size:9px;color:var(--text-3);
+  margin-top:4px;flex-shrink:0;
+  transition:transform .2s;
+}
+.vol-item.open .vol-arrow{transform:rotate(90deg)}
+.vol-badge{
+  font-size:10px;font-weight:600;
+  background:var(--red);color:#fff;
+  padding:2px 7px;border-radius:3px;
+  flex-shrink:0;margin-top:1px;
+  letter-spacing:.04em;
+}
+.vol-title{
+  font-size:12.5px;font-weight:600;
+  line-height:1.5;color:var(--text);flex:1;
+}
+
+.vol-body{display:none}
+.vol-item.open .vol-body{display:block}
+
+/* Section */
+.sec-hdr{
+  padding:5px 12px 4px 24px;
+  font-size:11px;font-weight:600;
+  color:var(--text-3);
+  letter-spacing:.06em;
+  border-bottom:1px solid var(--sidebar-bdr);
+  margin-top:2px;
+  text-transform:none;
+}
+
+/* Article link */
+.art-lnk{
+  display:flex;align-items:baseline;
+  padding:5px 10px 5px 18px;
+  font-size:12.5px;color:var(--text-2);
+  cursor:pointer;gap:6px;
+  line-height:1.5;
+  transition:background .12s,color .12s;
+}
+.art-lnk:hover{background:var(--sidebar-hov);color:var(--text)}
+.art-lnk.active{
+  background:var(--red);color:#fff;
+  font-weight:500;
+}
+.art-lnk.read:not(.active){color:var(--text-3)}
+.art-check{
+  font-size:9px;flex-shrink:0;
+  color:var(--red);margin-left:auto;
+  display:none;
+}
+.art-lnk.read:not(.active) .art-check{display:block}
+.art-lnk.active .art-check{display:none}
+.art-n{
+  font-size:10px;opacity:.5;flex-shrink:0;
+  font-variant-numeric:tabular-nums;
+  min-width:18px;
+}
+
+/* ── Overlay (mobile) ──────────────────────────────── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.55);z-index:140;
+}
+.overlay.on{display:block}
+
+/* ── Main ──────────────────────────────────────────── */
+.main{
+  margin-left:var(--sidebar-w);
+  margin-top:var(--header-h);
+  height:calc(100vh - var(--header-h));
+  overflow-y:auto;
+  transition:margin-left .28s;
+}
+.main::-webkit-scrollbar{width:5px}
+.main::-webkit-scrollbar-track{background:transparent}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.read-bar{
+  position:sticky;top:0;
+  height:2px;background:var(--red-dim);
+  z-index:10;
+}
+.read-fill{height:100%;background:var(--red);width:0;transition:width .1s linear}
+
+/* Article area */
+.art-wrap{
+  max-width:740px;
+  margin:0 auto;
+  padding:44px 52px 80px;
+}
+
+/* Welcome */
+.welcome{
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:72vh;text-align:center;
+}
+.welcome-star{font-size:64px;opacity:.2;margin-bottom:20px}
+.welcome-h{
+  font-family:'Noto Serif SC',serif;
+  font-size:26px;font-weight:700;
+  margin-bottom:12px;color:var(--text);
+}
+.welcome-p{
+  font-size:14px;color:var(--text-2);
+  line-height:2;max-width:360px;
+}
+
+/* Loading */
+.loading{
+  display:flex;align-items:center;justify-content:center;
+  min-height:60vh;color:var(--text-2);font-size:15px;
+}
+
+/* ── Article Typography ─────────────────────────────── */
+.prose{
+  font-family:'Noto Serif SC','SimSun','宋体',Georgia,serif;
+  font-size:var(--reading-sz);
+  line-height:2.05;
+  color:var(--text);
+}
+
+.prose h1{
+  font-size:1.55em;font-weight:700;
+  line-height:1.45;
+  margin-bottom:.3em;
+  font-family:'Noto Serif SC',serif;
+  letter-spacing:.04em;
+}
+.prose h2{
+  font-size:1.2em;font-weight:600;
+  margin-top:2.2em;margin-bottom:.8em;
+  padding-bottom:.35em;
+  border-bottom:1px solid var(--border);
+}
+.prose h3{
+  font-size:1.05em;font-weight:600;
+  margin-top:1.8em;margin-bottom:.6em;
+}
+.prose h4{font-weight:600;margin-top:1.4em;margin-bottom:.5em}
+
+/* First paragraph after H1 — date line, no indent */
+.prose h1 + p{
+  text-indent:0;
+  color:var(--text-2);
+  font-size:.9em;
+  margin-bottom:1.2em;
+}
+
+.prose p{
+  margin-bottom:1em;
+  text-indent:2em;
+}
+.prose h2 + p,
+.prose h3 + p,
+.prose h4 + p,
+.prose blockquote + p,
+.prose hr + p{text-indent:0}
+
+.prose blockquote{
+  background:var(--bq-bg);
+  border-left:3px solid var(--bq-bdr);
+  padding:10px 16px;
+  margin:1.2em 0;
+  border-radius:0 5px 5px 0;
+  font-size:.9em;
+  color:var(--text-2);
+}
+.prose blockquote p{text-indent:0;margin-bottom:.6em}
+.prose blockquote p:last-child{margin-bottom:0}
+
+.prose hr{
+  border:none;
+  border-top:1px solid var(--hr);
+  margin:2.5em 0 2em;
+}
+
+.prose .footnotes{
+  font-size:.83em;
+  color:var(--text-2);
+  line-height:1.9;
+  border-top:1px solid var(--hr);
+  margin-top:2.5em;
+  padding-top:1.5em;
+}
+.prose .footnotes p{text-indent:0;margin-bottom:.8em}
+
+.prose strong{font-weight:700}
+.prose em{font-style:normal;color:var(--text-2)}
+
+.prose ul,
+.prose ol{
+  padding-left:2em;
+  margin-bottom:1em;
+}
+.prose li{margin-bottom:.4em}
+
+/* ── Article metadata/background panel ─────────────── */
+.art-meta{
+  background:var(--ann-bg);
+  border:1px solid var(--ann-bdr);
+  border-radius:8px;
+  padding:0;
+  margin-bottom:2em;
+  overflow:hidden;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.art-meta-hdr{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;
+  cursor:pointer;
+  user-select:none;
+  background:rgba(200,168,75,.12);
+  border-bottom:1px solid transparent;
+  transition:background .15s;
+}
+.art-meta-hdr:hover{background:rgba(200,168,75,.22)}
+.art-meta.open .art-meta-hdr{border-bottom-color:var(--ann-bdr)}
+.art-meta-icon{font-size:16px;line-height:1}
+.art-meta-title{font-size:13px;font-weight:600;color:var(--text);flex:1}
+.art-meta-arrow{
+  font-size:9px;color:var(--text-3);
+  transition:transform .2s;
+}
+.art-meta.open .art-meta-arrow{transform:rotate(90deg)}
+.art-meta-body{
+  display:none;
+  padding:14px 16px 16px;
+}
+.art-meta.open .art-meta-body{display:block}
+
+.art-meta-sect{margin-bottom:14px}
+.art-meta-sect:last-child{margin-bottom:0}
+.art-meta-sect-label{
+  font-size:11px;font-weight:600;
+  color:var(--ann-bdr);
+  letter-spacing:.08em;
+  margin-bottom:6px;
+  text-transform:uppercase;
+}
+.art-meta-sect-text{
+  font-size:13px;color:var(--text-2);
+  line-height:1.9;
+}
+.art-meta-events{
+  list-style:none;padding:0;margin:0;
+}
+.art-meta-events li{
+  font-size:12.5px;color:var(--text-2);
+  padding:3px 0;
+  padding-left:14px;
+  position:relative;
+  line-height:1.7;
+}
+.art-meta-events li::before{
+  content:'';position:absolute;left:0;top:.65em;
+  width:5px;height:5px;border-radius:50%;
+  background:var(--ann-bdr);
+}
+
+/* ── Paragraph annotation wrapper ──────────────────── */
+.para-block{
+  position:relative;
+}
+/* Annotated paragraphs get a hover affordance */
+.para-block.has-ann > p:first-child,
+.para-block.has-ann > p{
+  cursor:pointer;
+  border-radius:4px;
+  padding-left:6px;
+  margin-left:-6px;
+  transition:background .15s;
+}
+.para-block.has-ann > p:hover{
+  background:var(--ann-para-bdr);
+}
+.para-block.has-ann.open > p{
+  background:var(--ann-para-bdr);
+  border-left:2px solid var(--ann-bdr);
+  padding-left:10px;
+  margin-left:-12px;
+}
+
+/* Annotation badge (注) shown on hover */
+.para-block.has-ann > p::after{
+  content:'注';
+  display:inline-block;
+  font-size:10px;font-family:'Noto Sans SC',sans-serif;
+  background:var(--ann-bdr);color:#fff;
+  border-radius:3px;padding:0 4px;
+  margin-left:6px;
+  vertical-align:middle;
+  opacity:0;
+  transition:opacity .15s;
+}
+.para-block.has-ann > p:hover::after,
+.para-block.has-ann.open > p::after{opacity:1}
+
+/* ── Annotation card ────────────────────────────────── */
+.ann-card{
+  display:none;
+  margin:.5em 0 1.4em;
+  border:1px solid var(--ann-bdr);
+  border-radius:8px;
+  overflow:hidden;
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:.84em;
+  animation:annSlide .2s ease;
+}
+@keyframes annSlide{
+  from{opacity:0;transform:translateY(-6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.para-block.open .ann-card{display:block}
+
+.ann-section{
+  padding:12px 16px;
+  border-bottom:1px solid rgba(200,168,75,.2);
+  line-height:1.85;
+}
+.ann-section:last-child{border-bottom:none}
+
+.ann-section.s-note{background:var(--ann-note-bg)}
+.ann-section.s-hist{background:var(--ann-hist-bg)}
+.ann-section.s-story{background:var(--ann-story-bg)}
+
+.ann-label{
+  display:flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;
+  letter-spacing:.06em;
+  margin-bottom:7px;
+}
+.ann-label-note{color:#a07828}
+.ann-label-hist{color:#2563a8}
+.ann-label-story{color:#2a7a2a}
+
+[data-theme="dark"] .ann-label-note{color:#c8a848}
+[data-theme="dark"] .ann-label-hist{color:#5c9cd8}
+[data-theme="dark"] .ann-label-story{color:#5aaa5a}
+
+.ann-icon{font-size:14px;line-height:1}
+.ann-text{
+  color:var(--text-2);
+  font-size:13px;
+}
+
+/* Annotation tip at top of article */
+.ann-tip{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  background:var(--ann-para-bdr);
+  border-radius:6px;
+  font-size:12px;color:var(--text-2);
+  margin-bottom:1.6em;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.ann-tip-icon{font-size:14px;opacity:.8}
+
+/* ── Article navigation ─────────────────────────────── */
+.art-nav{
+  display:flex;justify-content:space-between;align-items:stretch;
+  margin-top:44px;
+  padding-top:20px;
+  border-top:1px solid var(--border);
+  gap:12px;
+}
+.nav-btn{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:10px 14px;
+  background:var(--sidebar-bg);
+  border:1px solid var(--border);
+  border-radius:7px;
+  color:var(--text-2);
+  font-size:13px;
+  transition:all .18s;
+  max-width:46%;
+  text-align:left;
+  line-height:1.5;
+}
+.nav-btn.r{text-align:right}
+.nav-btn:hover:not(:disabled){
+  background:var(--red);color:#fff;
+  border-color:var(--red);
+}
+.nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.nav-lbl{font-size:10px;opacity:.7;display:block;margin-bottom:2px}
+.nav-ttl{
+  font-size:12.5px;display:block;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:200px;
+}
+
+/* ── Responsive ────────────────────────────────────── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none;box-shadow:3px 0 20px var(--shadow)}
+  .main{margin-left:0}
+  .hdr-menu{display:block}
+  .art-wrap{padding:28px 20px 60px}
+  .hdr-sub{display:none}
+}
+@media(max-width:480px){
+  .font-grp{display:none}
+  .nav-ttl{max-width:120px}
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="hdr">
+  <button class="hdr-menu" id="menuBtn">☰</button>
+  <div class="hdr-brand">
+    <span class="hdr-star">★</span>
+    <div>
+      <div class="hdr-name">读毛选</div>
+      <div class="hdr-sub">毛泽东选集</div>
+    </div>
+  </div>
+  <div class="hdr-gap"></div>
+  <div class="hdr-ctrls">
+    <div class="font-grp">
+      <button onclick="chFont(-1)" title="缩小字体">A−</button>
+      <button onclick="chFont(0)"  title="重置字体">A</button>
+      <button onclick="chFont(1)"  title="放大字体">A+</button>
+    </div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 夜间</button>
+  </div>
+</header>
+
+<!-- Mobile overlay -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-search">
+    <input class="search-box" id="searchBox" type="text" placeholder="搜索篇目…" autocomplete="off">
+  </div>
+  <div class="sidebar-stat">
+    <span id="statText">已读 0/0 篇</span>
+    <div class="stat-bar"><div class="stat-fill" id="statFill"></div></div>
+  </div>
+  <div class="toc-scroll" id="toc">
+    <div class="loading">目录加载中…</div>
+  </div>
+</aside>
+
+<!-- Main reading area -->
+<main class="main" id="main">
+  <div class="read-bar"><div class="read-fill" id="readFill"></div></div>
+  <div class="art-wrap" id="artWrap">
+    <div class="welcome">
+      <div class="welcome-star">★</div>
+      <div class="welcome-h">毛泽东选集</div>
+      <div class="welcome-p">
+        收录官方五卷及非官方二卷，共七卷。<br>
+        从左侧目录选择篇目即可开始阅读。<br>
+        <br>
+        带注解的篇目，点击段落可查看<br>通俗注解、历史背景与小故事。
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────
+let toc           = [];
+let flatList      = [];
+let curId         = null;
+let curAnnotations = null;   // {meta, paragraphs} for current article
+let fontSize      = +localStorage.getItem('fz') || 17;
+let readSet       = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
+
+// ── Boot ───────────────────────────────────────────────
+applyTheme(localStorage.getItem('theme') || 'light');
+setFontSize(fontSize);
+
+marked.setOptions({ breaks: true, gfm: true });
+
+// ── TOC fetch ──────────────────────────────────────────
+async function init() {
+  try {
+    const r = await fetch('/api/toc');
+    toc = await r.json();
+    buildFlat(toc);
+    renderToc();
+    updateStat();
+
+    const last = +localStorage.getItem('last');
+    if (last && flatList.some(a => a.id === last)) loadArt(last, false);
+  } catch(e) {
+    document.getElementById('toc').innerHTML =
+      '<div style="padding:20px;color:var(--text-2);text-align:center">加载失败，请刷新</div>';
+  }
+}
+
+function buildFlat(vols) {
+  flatList = [];
+  vols.forEach(vol => {
+    (vol.sections || []).forEach(sec =>
+      (sec.articles || []).forEach(a => flatList.push(a))
+    );
+    (vol.articles || []).forEach(a => flatList.push(a));
+  });
+}
+
+// ── Render TOC ────────────────────────────────────────
+function renderToc(filter = '') {
+  const q = filter.trim();
+  const tocEl = document.getElementById('toc');
+
+  let html = '';
+  toc.forEach((vol, vi) => {
+    const matched = [];
+    (vol.sections || []).forEach(sec =>
+      (sec.articles || []).forEach(a => {
+        if (!q || a.title.includes(q) || vol.name.includes(q) || sec.name.includes(q))
+          matched.push({ ...a, sec: sec.name });
+      })
+    );
+    (vol.articles || []).forEach(a => {
+      if (!q || a.title.includes(q) || vol.name.includes(q))
+        matched.push(a);
+    });
+
+    if (q && !matched.length) return;
+
+    const isOpen = !q
+      ? (vi === 0 || matched.some(a => a.id === curId))
+      : true;
+
+    html += `<div class="vol-item${isOpen ? ' open' : ''}" data-vi="${vi}">`;
+    html += `<div class="vol-hdr" onclick="toggleVol(${vi})">
+      <span class="vol-arrow">▶</span>
+      <span class="vol-badge">卷${String(vi+1).padStart(2,'0')}</span>
+      <span class="vol-title">${vol.name}</span>
+    </div>`;
+    html += `<div class="vol-body">`;
+
+    if (vol.sections && vol.sections.length) {
+      const bySec = {};
+      matched.filter(a => a.sec).forEach(a => {
+        (bySec[a.sec] = bySec[a.sec] || []).push(a);
+      });
+      Object.entries(bySec).forEach(([secName, arts]) => {
+        html += `<div class="sec-hdr">${secName}</div>`;
+        arts.forEach(a => { html += artLink(a); });
+      });
+      matched.filter(a => !a.sec).forEach(a => { html += artLink(a); });
+    } else {
+      matched.forEach(a => { html += artLink(a); });
+    }
+
+    html += `</div></div>`;
+  });
+
+  tocEl.innerHTML = html ||
+    '<div style="padding:20px;color:var(--text-2);text-align:center">无匹配</div>';
+}
+
+function artLink(a) {
+  const active = a.id === curId ? ' active' : '';
+  const read   = readSet.has(a.id) ? ' read' : '';
+  return `<div class="art-lnk${active}${read}" id="al${a.id}" onclick="loadArt(${a.id})">
+    <span class="art-n">${a.id}</span>
+    <span style="flex:1">${a.title}</span>
+    <span class="art-check">✓</span>
+  </div>`;
+}
+
+function toggleVol(vi) {
+  document.querySelector(`.vol-item[data-vi="${vi}"]`)?.classList.toggle('open');
+}
+
+document.getElementById('searchBox').addEventListener('input', function() {
+  renderToc(this.value);
+});
+
+// ── Load Article ──────────────────────────────────────
+async function loadArt(id, scrollTop = true) {
+  if (id === curId) { closeSidebar(); return; }
+  curId = id;
+  curAnnotations = null;
+  localStorage.setItem('last', id);
+
+  document.querySelectorAll('.art-lnk').forEach(el => el.classList.remove('active'));
+  const lnk = document.getElementById('al' + id);
+  if (lnk) {
+    lnk.classList.add('active');
+    lnk.closest('.vol-item')?.classList.add('open');
+    lnk.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  const wrap = document.getElementById('artWrap');
+  wrap.innerHTML = '<div class="loading">加载中…</div>';
+  if (scrollTop) document.getElementById('main').scrollTo({ top: 0 });
+  closeSidebar();
+
+  try {
+    // Fetch article content and annotations in parallel
+    const [artRes, annRes] = await Promise.all([
+      fetch('/api/article?id=' + id),
+      fetch('/api/annotations?id=' + id)
+    ]);
+    const d = await artRes.json();
+    const annData = await annRes.json();
+    curAnnotations = annData;
+    renderArticle(d.content, id, annData);
+
+    readSet.add(id);
+    localStorage.setItem('rd', JSON.stringify([...readSet]));
+    updateStat();
+    const al = document.getElementById('al' + id);
+    if (al) al.classList.add('read');
+  } catch(e) {
+    wrap.innerHTML = '<div class="loading" style="color:#c0392b">加载失败</div>';
+  }
+}
+
+// ── Render Article ────────────────────────────────────
+function renderArticle(md, id, annData) {
+  const parts = md.split(/\n---+\n/);
+  let mainMd  = parts[0];
+  let footMd  = parts.slice(1).join('\n');
+
+  let bodyHtml = marked.parse(mainMd);
+  if (footMd.trim()) {
+    bodyHtml += `<div class="footnotes">${marked.parse(footMd)}</div>`;
+  }
+
+  // Post-process HTML: wrap paragraphs with annotations
+  bodyHtml = injectAnnotations(bodyHtml, annData);
+
+  const idx  = flatList.findIndex(a => a.id === id);
+  const prev = idx > 0 ? flatList[idx - 1] : null;
+  const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
+
+  // Build article-meta panel if we have metadata
+  let metaHtml = '';
+  if (annData && annData.meta) {
+    metaHtml = buildMetaPanel(annData.meta);
+  }
+
+  // Annotation tip
+  let tipHtml = '';
+  if (annData && annData.paragraphs && annData.paragraphs.length > 0) {
+    tipHtml = `<div class="ann-tip">
+      <span class="ann-tip-icon">💡</span>
+      <span>本篇有段落注解——点击正文段落，可查看通俗注解、历史背景与小故事。</span>
+    </div>`;
+  }
+
+  document.getElementById('artWrap').innerHTML = `
+    ${metaHtml}
+    ${tipHtml}
+    <div class="prose">${bodyHtml}</div>
+    <nav class="art-nav">
+      <button class="nav-btn"
+        ${!prev ? 'disabled' : `onclick="loadArt(${prev.id})"`}>
+        <span class="nav-lbl">← 上一篇</span>
+        <span class="nav-ttl">${prev ? prev.title : ''}</span>
+      </button>
+      <button class="nav-btn r"
+        ${!next ? 'disabled' : `onclick="loadArt(${next.id})"`}>
+        <span class="nav-lbl">下一篇 →</span>
+        <span class="nav-ttl">${next ? next.title : ''}</span>
+      </button>
+    </nav>`;
+
+  const h1 = document.querySelector('.prose h1');
+  document.title = (h1 ? h1.textContent : '文章') + ' — 读毛选';
+}
+
+// ── Inject Annotations into HTML ─────────────────────
+function injectAnnotations(html, annData) {
+  if (!annData || !annData.paragraphs || !annData.paragraphs.length) return html;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+  const container = doc.body.firstChild;
+
+  container.querySelectorAll('p').forEach(p => {
+    const txt = p.textContent.trim();
+    const ann = annData.paragraphs.find(a => txt.startsWith(a.match));
+    if (!ann) return;
+
+    // Wrap this <p> in a .para-block.has-ann
+    const wrapper = document.createElement('div');
+    wrapper.className = 'para-block has-ann';
+    p.parentNode.insertBefore(wrapper, p);
+    wrapper.appendChild(p);
+
+    // Build annotation card
+    const card = document.createElement('div');
+    card.className = 'ann-card';
+    card.innerHTML = buildAnnCard(ann);
+    wrapper.appendChild(card);
+
+    // Click to toggle
+    p.addEventListener('click', () => {
+      // Close other open ones
+      document.querySelectorAll('.para-block.has-ann.open').forEach(el => {
+        if (el !== wrapper) el.classList.remove('open');
+      });
+      wrapper.classList.toggle('open');
+      if (wrapper.classList.contains('open')) {
+        wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  });
+
+  return container.innerHTML;
+}
+
+function buildAnnCard(ann) {
+  let html = '';
+  if (ann.note) {
+    html += `<div class="ann-section s-note">
+      <div class="ann-label ann-label-note"><span class="ann-icon">📖</span> 通俗注解</div>
+      <div class="ann-text">${escHtml(ann.note)}</div>
+    </div>`;
+  }
+  if (ann.bg) {
+    html += `<div class="ann-section s-hist">
+      <div class="ann-label ann-label-hist"><span class="ann-icon">📜</span> 历史背景 · 党史</div>
+      <div class="ann-text">${escHtml(ann.bg)}</div>
+    </div>`;
+  }
+  if (ann.story) {
+    html += `<div class="ann-section s-story">
+      <div class="ann-label ann-label-story"><span class="ann-icon">💡</span> 小故事 · 例子</div>
+      <div class="ann-text">${escHtml(ann.story)}</div>
+    </div>`;
+  }
+  return html;
+}
+
+function buildMetaPanel(meta) {
+  let eventsHtml = '';
+  if (meta.events && meta.events.length) {
+    eventsHtml = `<div class="art-meta-sect">
+      <div class="art-meta-sect-label">相关历史事件</div>
+      <ul class="art-meta-events">
+        ${meta.events.map(e => `<li>${escHtml(e)}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+
+  return `<div class="art-meta" id="artMetaPanel">
+    <div class="art-meta-hdr" onclick="toggleMeta()">
+      <span class="art-meta-icon">📚</span>
+      <span class="art-meta-title">写作背景 · 党史意义 · 历史事件</span>
+      <span class="art-meta-arrow">▶</span>
+    </div>
+    <div class="art-meta-body">
+      ${meta.context ? `<div class="art-meta-sect">
+        <div class="art-meta-sect-label">写作背景</div>
+        <div class="art-meta-sect-text">${escHtml(meta.context)}</div>
+      </div>` : ''}
+      ${meta.party_history ? `<div class="art-meta-sect">
+        <div class="art-meta-sect-label">党史意义</div>
+        <div class="art-meta-sect-text">${escHtml(meta.party_history)}</div>
+      </div>` : ''}
+      ${eventsHtml}
+    </div>
+  </div>`;
+}
+
+function toggleMeta() {
+  document.getElementById('artMetaPanel')?.classList.toggle('open');
+}
+
+function escHtml(s) {
+  return (s || '')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/\n/g,'<br>');
+}
+
+// ── Reading progress bar ──────────────────────────────
+document.getElementById('main').addEventListener('scroll', function() {
+  const max = this.scrollHeight - this.clientHeight;
+  const pct = max > 0 ? this.scrollTop / max * 100 : 0;
+  document.getElementById('readFill').style.width = pct + '%';
+});
+
+// ── Progress stat ─────────────────────────────────────
+function updateStat() {
+  const t = flatList.length, r = readSet.size;
+  document.getElementById('statText').textContent = `已读 ${r}/${t} 篇`;
+  document.getElementById('statFill').style.width = t ? (r/t*100) + '%' : '0%';
+}
+
+// ── Font size ─────────────────────────────────────────
+function chFont(d) {
+  if (d === 0) fontSize = 17;
+  else fontSize = Math.min(22, Math.max(13, fontSize + d));
+  setFontSize(fontSize);
+  localStorage.setItem('fz', fontSize);
+}
+function setFontSize(sz) {
+  document.documentElement.style.setProperty('--reading-sz', sz + 'px');
+}
+
+// ── Theme ─────────────────────────────────────────────
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = t === 'dark' ? '☀ 日间' : '🌙 夜间';
+}
+
+// ── Mobile sidebar ────────────────────────────────────
+document.getElementById('menuBtn').onclick = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('on');
+};
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('on');
+}
+
+// ── Keyboard nav ──────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || !curId) return;
+  const idx = flatList.findIndex(a => a.id === curId);
+  if (e.key === 'ArrowLeft'  && idx > 0)                  loadArt(flatList[idx-1].id);
+  if (e.key === 'ArrowRight' && idx < flatList.length - 1) loadArt(flatList[idx+1].id);
+});
+
+// ── Start ─────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

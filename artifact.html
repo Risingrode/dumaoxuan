@@ -1,0 +1,746 @@
+<title>读毛选</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ── Tokens ──────────────────────────────────────────── */
+:root {
+  --bg:        #f3ede1;
+  --sidebar:   #e9e1d4;
+  --hdr:       #8c1c1c;
+  --hdr-t:     #fff;
+  --text:      #1d1811;
+  --text2:     #887060;
+  --text3:     #b8a890;
+  --red:       #8c1c1c;
+  --red-h:     #a82020;
+  --border:    #c8bfae;
+  --hover:     #dfd7ca;
+  --bq:        #e4dbd0;
+  --fn:        #e0d9ce;
+  --shadow:    rgba(0,0,0,.13);
+  --rdg-sz:    17px;
+  --sw:        256px;
+  --sh:        52px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:      #141110;
+    --sidebar: #0e0c0a;
+    --hdr:     #0a0807;
+    --hdr-t:   #e0d4c0;
+    --text:    #dfd3bf;
+    --text2:   #8a7a68;
+    --text3:   #5a4e42;
+    --red:     #c03030;
+    --red-h:   #d44040;
+    --border:  #2a2420;
+    --hover:   #1c1815;
+    --bq:      #1a1714;
+    --fn:      #181410;
+    --shadow:  rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bg:      #141110;
+  --sidebar: #0e0c0a;
+  --hdr:     #0a0807;
+  --hdr-t:   #e0d4c0;
+  --text:    #dfd3bf;
+  --text2:   #8a7a68;
+  --text3:   #5a4e42;
+  --red:     #c03030;
+  --red-h:   #d44040;
+  --border:  #2a2420;
+  --hover:   #1c1815;
+  --bq:      #1a1714;
+  --fn:      #181410;
+  --shadow:  rgba(0,0,0,.5);
+}
+
+/* ── Reset ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  transition: background .25s, color .25s;
+}
+button { font-family: inherit; cursor: pointer; }
+
+/* ── Header ─────────────────────────────────────────── */
+.hdr {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--sh);
+  background: var(--hdr);
+  color: var(--hdr-t);
+  display: flex; align-items: center;
+  padding: 0 14px;
+  z-index: 200;
+  box-shadow: 0 1px 8px var(--shadow);
+  gap: 10px;
+}
+.hdr-tog {
+  display: none;
+  background: rgba(255,255,255,.12);
+  border: none;
+  color: var(--hdr-t);
+  width: 36px; height: 36px;
+  border-radius: 5px;
+  font-size: 18px;
+  align-items: center; justify-content: center;
+}
+.hdr-tog:hover { background: rgba(255,255,255,.22); }
+.hdr-brand { display: flex; align-items: center; gap: 10px; }
+.hdr-star {
+  font-size: 22px; line-height: 1; opacity: .85;
+  text-shadow: 0 0 12px rgba(255,200,0,.4);
+}
+.hdr-name {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: .1em;
+}
+.hdr-sub {
+  font-size: 11px;
+  opacity: .6;
+  margin-top: 1px;
+  letter-spacing: .05em;
+}
+.hdr-gap { flex: 1; }
+.hdr-ctrls { display: flex; align-items: center; gap: 6px; }
+
+.fgrp {
+  display: flex; align-items: center;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 5px; overflow: hidden;
+}
+.fgrp button {
+  background: none; border: none;
+  color: var(--hdr-t);
+  padding: 5px 9px; font-size: 12px;
+  transition: background .15s; opacity: .8;
+}
+.fgrp button:hover { background: rgba(255,255,255,.2); opacity: 1; }
+
+.theme-b {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  color: var(--hdr-t);
+  padding: 5px 12px; border-radius: 5px;
+  font-size: 12px;
+  transition: background .15s;
+  white-space: nowrap;
+}
+.theme-b:hover { background: rgba(255,255,255,.2); }
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar {
+  position: fixed;
+  top: var(--sh); left: 0;
+  width: var(--sw);
+  height: calc(100vh - var(--sh));
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 150;
+  transition: transform .28s cubic-bezier(.4,0,.2,1), background .25s;
+}
+
+.s-search {
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.s-input {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 13px; color: var(--text);
+  font-family: inherit;
+  outline: none;
+  transition: border-color .2s;
+}
+.s-input::placeholder { color: var(--text3); }
+.s-input:focus { border-color: var(--red); }
+
+.s-stat {
+  padding: 7px 12px;
+  font-size: 11px; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.s-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.s-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width .4s; }
+
+.s-scroll {
+  overflow-y: auto; flex: 1;
+  padding: 4px 0 24px;
+}
+.s-scroll::-webkit-scrollbar { width: 3px; }
+.s-scroll::-webkit-scrollbar-track { background: transparent; }
+.s-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Volume */
+.vol-hdr {
+  display: flex; align-items: flex-start;
+  padding: 9px 10px;
+  cursor: pointer; gap: 7px;
+  transition: background .12s;
+  user-select: none;
+}
+.vol-hdr:hover { background: var(--hover); }
+.vol-arr {
+  font-size: 8px; color: var(--text3);
+  margin-top: 5px; flex-shrink: 0;
+  transition: transform .2s;
+}
+.vol-item.open .vol-arr { transform: rotate(90deg); }
+.vol-badge {
+  font-size: 10px; font-weight: 600;
+  background: var(--red); color: #fff;
+  padding: 2px 7px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.vol-title {
+  font-size: 12.5px; font-weight: 600;
+  line-height: 1.5; color: var(--text); flex: 1;
+}
+.vol-body { display: none; }
+.vol-item.open .vol-body { display: block; }
+
+/* Section label */
+.sec-lbl {
+  padding: 6px 10px 4px 22px;
+  font-size: 10.5px; font-weight: 600;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  margin-top: 3px;
+  letter-spacing: .05em;
+}
+
+/* Article link */
+.art {
+  display: flex; align-items: baseline;
+  padding: 5px 10px 5px 16px;
+  font-size: 12.5px; color: var(--text2);
+  cursor: pointer; gap: 7px;
+  line-height: 1.5;
+  transition: background .1s, color .1s;
+}
+.art:hover { background: var(--hover); color: var(--text); }
+.art.active { background: var(--red); color: #fff; font-weight: 500; }
+.art.read:not(.active) { color: var(--text3); }
+.art-n {
+  font-size: 10px; flex-shrink: 0;
+  opacity: .45;
+  font-variant-numeric: tabular-nums;
+  min-width: 22px;
+}
+.art-ck {
+  font-size: 9px; color: var(--red);
+  flex-shrink: 0; margin-left: auto;
+  display: none;
+}
+.art.read:not(.active) .art-ck { display: block; }
+
+/* ── Overlay (mobile) ───────────────────────────────── */
+.ovl {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.55); z-index: 140;
+}
+.ovl.on { display: block; }
+
+/* ── Main ───────────────────────────────────────────── */
+.main {
+  margin-left: var(--sw);
+  margin-top: var(--sh);
+  height: calc(100vh - var(--sh));
+  overflow-y: auto;
+  transition: margin-left .28s;
+}
+.main::-webkit-scrollbar { width: 5px; }
+.main::-webkit-scrollbar-track { background: transparent; }
+.main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.rdbar { position: sticky; top: 0; height: 2px; background: rgba(140,28,28,.15); z-index: 10; }
+.rdfil { height: 100%; background: var(--red); width: 0; transition: width .08s linear; }
+
+/* Article container */
+.art-wrap { max-width: 720px; margin: 0 auto; padding: 44px 56px 80px; }
+
+/* ── Prose ──────────────────────────────────────────── */
+.prose {
+  font-family: 'Noto Serif SC', 'SimSun', '宋体', Georgia, serif;
+  font-size: var(--rdg-sz);
+  line-height: 2.05;
+  color: var(--text);
+}
+.prose h1 {
+  font-size: 1.55em; font-weight: 700;
+  line-height: 1.45; margin-bottom: .25em;
+  font-family: 'Noto Serif SC', serif;
+  letter-spacing: .03em;
+  text-wrap: balance;
+}
+.prose h2 {
+  font-size: 1.15em; font-weight: 600;
+  margin-top: 2.2em; margin-bottom: .7em;
+  padding-bottom: .3em;
+  border-bottom: 1px solid var(--border);
+  text-wrap: balance;
+}
+.prose h3 {
+  font-size: 1.05em; font-weight: 600;
+  margin-top: 1.8em; margin-bottom: .5em;
+  text-wrap: balance;
+}
+.prose p { margin-bottom: 1em; text-indent: 2em; }
+.prose h1 + p {
+  text-indent: 0; color: var(--text2);
+  font-size: .9em; margin-bottom: 1.4em;
+}
+.prose h2 + p,
+.prose h3 + p,
+.prose blockquote + p { text-indent: 0; }
+.prose blockquote {
+  background: var(--bq);
+  border-left: 3px solid var(--red);
+  padding: 10px 15px;
+  margin: 1.2em 0 1.4em;
+  border-radius: 0 5px 5px 0;
+  font-size: .88em; color: var(--text2);
+}
+.prose blockquote p { text-indent: 0; margin-bottom: .5em; }
+.prose blockquote p:last-child { margin-bottom: 0; }
+.prose .footnotes {
+  margin-top: 2.5em; padding-top: 1.5em;
+  border-top: 1px solid var(--border);
+  font-size: .83em; color: var(--text2); line-height: 1.9;
+}
+.prose .footnotes p { text-indent: 0; margin-bottom: .7em; }
+.prose strong { font-weight: 700; }
+.prose em { font-style: normal; color: var(--text2); }
+.prose ul, .prose ol { padding-left: 2em; margin-bottom: 1em; }
+.prose li { margin-bottom: .4em; }
+
+/* placeholder (non-embedded article) */
+.noart {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 50vh; text-align: center;
+  color: var(--text2);
+}
+.noart-star { font-size: 48px; opacity: .15; margin-bottom: 16px; }
+.noart-h { font-family: 'Noto Serif SC', serif; font-size: 20px; color: var(--text); margin-bottom: 8px; }
+.noart-p { font-size: 13px; line-height: 2; }
+.noart-cmd {
+  margin-top: 16px;
+  display: inline-block;
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 5px;
+  font-size: 12px; font-family: 'Courier New', monospace;
+  color: var(--text2); letter-spacing: .03em;
+}
+
+/* ── Article nav ────────────────────────────────────── */
+.art-nav {
+  display: flex; justify-content: space-between;
+  margin-top: 44px; padding-top: 20px;
+  border-top: 1px solid var(--border);
+  gap: 12px;
+}
+.nav-b {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 10px 14px;
+  background: var(--sidebar);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2); font-size: 13px;
+  transition: all .15s; max-width: 46%;
+  line-height: 1.5;
+}
+.nav-b.nr { text-align: right; }
+.nav-b:hover:not(:disabled) { background: var(--red); color: #fff; border-color: var(--red); }
+.nav-b:disabled { opacity: .3; cursor: not-allowed; }
+.nav-lbl { font-size: 10px; opacity: .7; display: block; margin-bottom: 2px; }
+.nav-ttl { font-size: 12.5px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+/* ── Responsive ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: none; box-shadow: 4px 0 24px var(--shadow); }
+  .main { margin-left: 0; }
+  .hdr-tog { display: flex; }
+  .art-wrap { padding: 28px 20px 60px; }
+  .hdr-sub { display: none; }
+}
+@media (max-width: 480px) {
+  .fgrp { display: none; }
+  .nav-ttl { max-width: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+
+<!-- Header -->
+<header class="hdr">
+  <button class="hdr-tog" id="menuBtn" aria-label="目录">☰</button>
+  <div class="hdr-brand">
+    <span class="hdr-star">★</span>
+    <div>
+      <div class="hdr-name">读毛选</div>
+      <div class="hdr-sub">毛泽东选集</div>
+    </div>
+  </div>
+  <div class="hdr-gap"></div>
+  <div class="hdr-ctrls">
+    <div class="fgrp">
+      <button onclick="chFont(-1)" aria-label="缩小字体">A−</button>
+      <button onclick="chFont(0)"  aria-label="重置字体">A</button>
+      <button onclick="chFont(1)"  aria-label="放大字体">A+</button>
+    </div>
+    <button class="theme-b" id="themeBtn" onclick="toggleTheme()">🌙 夜间</button>
+  </div>
+</header>
+
+<!-- Mobile overlay -->
+<div class="ovl" id="ovl" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar" aria-label="目录">
+  <div class="s-search">
+    <input class="s-input" id="searchBox" type="search" placeholder="搜索篇目…" autocomplete="off">
+  </div>
+  <div class="s-stat">
+    <span id="statTxt">已读 0 / 392 篇</span>
+    <div class="s-bar"><div class="s-fill" id="sFill" style="width:0%"></div></div>
+  </div>
+  <nav class="s-scroll" id="toc" aria-label="文章目录"></nav>
+</aside>
+
+<!-- Main reading area -->
+<main class="main" id="main">
+  <div class="rdbar"><div class="rdfil" id="rdFil"></div></div>
+  <div class="art-wrap" id="artWrap"></div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<script>
+// ── Embedded TOC ──────────────────────────────────────
+const TOC_DATA = [{"name":"第一卷 国内革命战争时期","sections":[{"name":"第一次国内革命战争时期","articles":[{"id":1,"title":"中国社会各阶级的分析"},{"id":2,"title":"湖南农民运动考察报告"}]},{"name":"第二次国内革命战争时期","articles":[{"id":3,"title":"中国的红色政权为什么能够存在？"},{"id":4,"title":"井冈山的斗争"},{"id":5,"title":"关于纠正党内的错误思想"},{"id":6,"title":"星星之火，可以燎原"},{"id":7,"title":"反对本本主义"},{"id":8,"title":"必须注意经济工作"},{"id":9,"title":"怎样分析农村阶级"},{"id":10,"title":"我们的经济政策"},{"id":11,"title":"关心群众生活，注意工作方法"},{"id":12,"title":"论反对日本帝国主义的策略"},{"id":13,"title":"中国革命战争的战略问题"},{"id":14,"title":"关于蒋介石声明的声明"},{"id":15,"title":"中国共产党在抗日时期的任务"},{"id":16,"title":"为争取千百万群众进入抗日民族统一战线而斗争"},{"id":17,"title":"实践论"},{"id":18,"title":"矛盾论"}]}],"articles":[]},{"name":"第二卷 抗日战争时期（上）","sections":[],"articles":[{"id":19,"title":"反对日本进攻的方针、办法和前途"},{"id":20,"title":"为动员一切力量争取抗战胜利而斗争"},{"id":21,"title":"反对自由主义"},{"id":22,"title":"国共合作成立后的迫切任务"},{"id":23,"title":"和英国记者贝特兰的谈话"},{"id":24,"title":"上海太原失陷以后抗日战争的形势和任务"},{"id":25,"title":"陕甘宁边区政府第八路军后方留守处布告"},{"id":26,"title":"抗日游击战争的战略问题"},{"id":27,"title":"论持久战"},{"id":28,"title":"中国共产党在民族战争中的地位"},{"id":29,"title":"统一战线中的独立自主问题"},{"id":30,"title":"战争和战略问题"},{"id":31,"title":"五四运动"},{"id":32,"title":"青年运动的方向"},{"id":33,"title":"反对投降活动"},{"id":34,"title":"必须制裁反动派"},{"id":35,"title":"关于国际新形势对新华日报记者的谈话"},{"id":36,"title":"和中央社、扫荡报、新民报三记者的谈话"},{"id":37,"title":"苏联利益和人类利益的一致"},{"id":38,"title":"《共产党人》发刊词"},{"id":39,"title":"目前形势和党的任务"},{"id":40,"title":"大量吸收知识分子"},{"id":41,"title":"中国革命和中国共产党"},{"id":42,"title":"斯大林是中国人民的朋友"},{"id":43,"title":"纪念白求恩"},{"id":44,"title":"新民主主义论"},{"id":45,"title":"克服投降危险，力争时局好转"},{"id":46,"title":"团结一切抗日力量，反对反共顽固派"},{"id":47,"title":"向国民党的十点要求"},{"id":48,"title":"《中国工人》发刊词"},{"id":49,"title":"必须强调团结和进步"},{"id":50,"title":"新民主主义的宪政"},{"id":51,"title":"抗日根据地的政权问题"},{"id":52,"title":"目前抗日统一战线中的策略问题"},{"id":53,"title":"放手发展抗日力量，抵抗反共顽固派的进攻"},{"id":54,"title":"团结到底"},{"id":55,"title":"论政策"},{"id":56,"title":"为皖南事变发表的命令和谈话"},{"id":57,"title":"打退第二次反共高潮后的时局"},{"id":58,"title":"关于打退第二次反共高潮的总结"}]},{"name":"第三卷 抗日战争时期（下）","sections":[],"articles":[{"id":59,"title":"《农村调查》的序言和跋"},{"id":60,"title":"改造我们的学习"},{"id":61,"title":"揭破远东慕尼黑的阴谋"},{"id":62,"title":"关于反法西斯的国际统一战线"},{"id":63,"title":"在陕甘宁边区参议会的演说"},{"id":64,"title":"整顿党的作风"},{"id":65,"title":"反对党八股"},{"id":66,"title":"在延安文艺座谈会上的讲话"},{"id":67,"title":"一个极其重要的政策"},{"id":68,"title":"第二次世界大战的转折点"},{"id":69,"title":"祝十月革命二十五周年"},{"id":70,"title":"抗日时期的经济问题和财政问题"},{"id":71,"title":"关于领导方法的若干问题"},{"id":72,"title":"质问国民党"},{"id":73,"title":"开展根据地的减租、生产和拥政爱民运动"},{"id":74,"title":"评国民党十一中全会和三届二次国民参政会"},{"id":75,"title":"组织起来"},{"id":76,"title":"学习和时局"},{"id":77,"title":"为人民服务"},{"id":78,"title":"评蒋介石在双十节的演说"},{"id":79,"title":"文化工作中的统一战线"},{"id":80,"title":"必须学会做经济工作"},{"id":81,"title":"游击区也能够进行生产"},{"id":82,"title":"两个中国之命运"},{"id":83,"title":"论联合政府"},{"id":84,"title":"愚公移山"},{"id":85,"title":"论军队生产自给，兼论整风和生产两大运动的重要性"},{"id":86,"title":"赫尔利和蒋介石的双簧已经破产"},{"id":87,"title":"评赫尔利政策的危险"},{"id":88,"title":"给福斯特同志的电报"},{"id":89,"title":"对日寇的最后一战"}]},{"name":"第四卷 第三次国内革命战争时期","sections":[],"articles":[{"id":90,"title":"抗日战争胜利后的时局和我们的方针"},{"id":91,"title":"蒋介石在挑动内战"},{"id":92,"title":"第十八集团军总司令给蒋介石的两个电报"},{"id":93,"title":"评蒋介石发言人谈话"},{"id":94,"title":"中共中央关于同国民党进行和平谈判的通知"},{"id":95,"title":"关于重庆谈判"},{"id":96,"title":"国民党进攻的真相"},{"id":97,"title":"减租和生产是保卫解放区的两件大事"},{"id":98,"title":"一九四六年解放区工作的方针"},{"id":99,"title":"建立巩固的东北根据地"},{"id":100,"title":"关于目前国际形势的几点估计"},{"id":101,"title":"以自卫战争粉碎蒋介石的进攻"},{"id":102,"title":"和美国记者安娜·路易斯·斯特朗的谈话"},{"id":103,"title":"集中优势兵力，各个歼灭敌人"},{"id":104,"title":"美国调解真相和中国内战前途"},{"id":105,"title":"三个月总结"},{"id":106,"title":"迎接中国革命的新高潮"},{"id":107,"title":"中共中央关于暂时放弃延安和保卫陕甘宁边区的两个文件"},{"id":108,"title":"关于西北战场的作战方针"},{"id":109,"title":"蒋介石政府已处在全民的包围中"},{"id":110,"title":"解放战争第二年的战略方针"},{"id":111,"title":"中国人民解放军宣言"},{"id":112,"title":"中国人民解放军总部关于重行颁布三大纪律八项注意的训令"},{"id":113,"title":"目前形势和我们的任务"},{"id":114,"title":"关于建立报告制度"},{"id":115,"title":"关于目前党的政策中的几个重要问题"},{"id":116,"title":"军队内部的民主运动"},{"id":117,"title":"在不同地区实施土地法的不同策略"},{"id":118,"title":"纠正土地改革宣传中的左倾错误"},{"id":119,"title":"新解放区土地改革要点"},{"id":120,"title":"关于工商业政策"},{"id":121,"title":"关于民族资产阶级和开明绅士问题"},{"id":122,"title":"评西北大捷兼论解放军的新式整军运动"},{"id":123,"title":"关于情况的通报"},{"id":124,"title":"在晋绥干部会议上的讲话"},{"id":125,"title":"对晋绥日报编辑人员的谈话"},{"id":126,"title":"再克洛阳后给洛阳前线指挥部的电报"},{"id":127,"title":"新解放区农村工作的策略问题"},{"id":128,"title":"一九四八年的土地改革工作和整党工作"},{"id":129,"title":"关于辽沈战役的作战方针"},{"id":130,"title":"关于健全党委制"},{"id":131,"title":"中共中央关于九月会议的通知"},{"id":132,"title":"关于淮海战役的作战方针"},{"id":133,"title":"全世界革命力量团结起来，反对帝国主义的侵略"},{"id":134,"title":"中国军事形势的重大变化"},{"id":135,"title":"关于平津战役的作战方针"},{"id":136,"title":"敦促杜聿明等投降书"},{"id":137,"title":"将革命进行到底"},{"id":138,"title":"评战犯求和"},{"id":139,"title":"中共中央毛泽东主席关于时局的声明"},{"id":140,"title":"中共发言人评南京行政院的决议"},{"id":141,"title":"中共发言人关于命令国民党反动政府重新逮捕前日本侵华军总司令冈村宁次和逮捕国民党内战罪犯的谈话"},{"id":142,"title":"中共发言人关于和平条件必须包括惩办日本战犯和国民党战犯的声明"},{"id":143,"title":"把军队变为工作队"},{"id":144,"title":"四分五裂的反动派为什么还要空喊全面和平"},{"id":145,"title":"国民党反动派由呼吁和平变为呼吁战争"},{"id":146,"title":"评国民党对战争责任问题的几种答案"},{"id":147,"title":"在中国共产党第七届中央委员会第二次全体会议上的报告"},{"id":148,"title":"党委会的工作方法"},{"id":149,"title":"南京政府向何处去？"},{"id":150,"title":"向全国进军的命令"},{"id":151,"title":"中国人民解放军布告"},{"id":152,"title":"中国人民解放军总部发言人为英国军舰暴行发表的声明"},{"id":153,"title":"在新政治协商会议筹备会上的讲话"},{"id":154,"title":"论人民民主专政"},{"id":155,"title":"丢掉幻想，准备斗争"},{"id":156,"title":"别了，司徒雷登"},{"id":157,"title":"友谊，还是侵略？"},{"id":158,"title":"为什么要讨论白皮书？"},{"id":159,"title":"唯心历史观的破产"}]},{"name":"第五卷 社会主义革命和建设时期（一）","sections":[],"articles":[{"id":160,"title":"中国人民站起来了"},{"id":161,"title":"中国人民大团结万岁"},{"id":162,"title":"人民英雄们永垂不朽"},{"id":163,"title":"永远保持艰苦奋斗的作风"},{"id":164,"title":"征询对待富农策略问题的意见"},{"id":165,"title":"为争取国家财政经济状况的基本好转而斗争"},{"id":166,"title":"不要四面出击"},{"id":167,"title":"做一个完全的革命派"},{"id":168,"title":"你们是全民族的模范人物"},{"id":169,"title":"给中国人民志愿军的命令"},{"id":170,"title":"中国人民志愿军要爱护朝鲜的一山一水一草一木"},{"id":171,"title":"中共中央政治局扩大会议决议要点"},{"id":172,"title":"镇压反革命必须实行党的群众路线"},{"id":173,"title":"镇压反革命必须打得稳，打得准，打得狠"},{"id":174,"title":"应当重视电影《武训传》的讨论"},{"id":175,"title":"三大运动的伟大胜利"},{"id":176,"title":"关于三反五反的斗争"},{"id":177,"title":"把农业互助合作当作一件大事去做"},{"id":178,"title":"元旦祝词"},{"id":179,"title":"中共中央关于西藏工作方针的指示"},{"id":180,"title":"工人阶级与资产阶级的矛盾是国内的主要矛盾"},{"id":181,"title":"团结起来，划清敌我界限"},{"id":182,"title":"祝贺中国人民志愿军的重大胜利"},{"id":183,"title":"反对官僚主义、命令主义和违法乱纪"},{"id":184,"title":"批判大汉族主义"},{"id":185,"title":"解决五多问题"},{"id":186,"title":"对刘少奇、杨尚昆破坏纪律擅自以中央名义发出文件的批评"},{"id":187,"title":"批判离开总路线的右倾观点"},{"id":188,"title":"青年团的工作要照顾青年的特点"},{"id":189,"title":"关于国家资本主义"},{"id":190,"title":"党在过渡时期的总路线"},{"id":191,"title":"反对党内的资产阶级思想"},{"id":192,"title":"改造资本主义工商业的必经之路"},{"id":193,"title":"抗美援朝的伟大胜利和今后的任务"},{"id":194,"title":"批判梁漱溟的反动思想"},{"id":195,"title":"关于农业互助合作的两次谈话"},{"id":196,"title":"关于中华人民共和国宪法草案"},{"id":197,"title":"为建设一个伟大的社会主义国家而奋斗"},{"id":198,"title":"关于红楼梦研究问题的信"},{"id":199,"title":"原子弹吓不倒中国人民"},{"id":200,"title":"在中国共产党全国代表会议上的讲话"},{"id":201,"title":"驳舆论一律"},{"id":202,"title":"关于胡风反革命集团的材料的序言和按语"},{"id":203,"title":"关于农业合作化问题"},{"id":204,"title":"农业合作化必须依靠党团员和贫农下中农"},{"id":205,"title":"农业合作化的一场辩论和当前的阶级斗争"},{"id":206,"title":"中国农村的社会主义高潮的序言"},{"id":207,"title":"中国农村的社会主义高潮的按语"},{"id":208,"title":"征询对农业十七条的意见"},{"id":209,"title":"加快手工业的社会主义改造"},{"id":210,"title":"论十大关系"},{"id":211,"title":"美帝国主义是纸老虎"},{"id":212,"title":"增强党的团结，继承党的传统"},{"id":213,"title":"我们党的一些历史经验"},{"id":214,"title":"纪念孙中山先生"},{"id":215,"title":"在中国共产党第八届中央委员会第二次全体会议上的讲话"},{"id":216,"title":"在省市自治区党委书记会议上的讲话"},{"id":217,"title":"关于正确处理人民内部矛盾的问题"},{"id":218,"title":"在中国共产党全国宣传工作会议上的讲话"},{"id":219,"title":"坚持艰苦奋斗，密切联系群众"},{"id":220,"title":"事情正在起变化"},{"id":221,"title":"中国共产党是全中国人民的领导核心"},{"id":222,"title":"组织力量反击右派分子的猖狂进攻"},{"id":223,"title":"文汇报的资产阶级方向应当批判"},{"id":224,"title":"打退资产阶级右派的进攻"},{"id":225,"title":"一九五七年夏季的形势"},{"id":226,"title":"做革命的促进派"},{"id":227,"title":"坚定地相信群众的大多数"},{"id":228,"title":"党内团结的辩证方法"},{"id":229,"title":"一切反动派都是纸老虎"}]},{"name":"第六卷 社会主义革命和建设时期（二）【非官方】","sections":[],"articles":[{"id":230,"title":"出版说明"},{"id":231,"title":"静火有言"},{"id":232,"title":"关于中国人民志愿军撤出朝鲜问题"},{"id":233,"title":"工作方法六十条（草案）"},{"id":234,"title":"在成都会议上的讲话"},{"id":235,"title":"干部要以普通劳动者的姿态出现"},{"id":236,"title":"要搞一点原子弹氢弹"},{"id":237,"title":"西藏要准备对付那里的可能的全局叛乱"},{"id":238,"title":"介绍一封信"},{"id":239,"title":"同苏联驻华大使尤金的谈话"},{"id":240,"title":"关于国际形势问题"},{"id":241,"title":"中华人民共和国国防部告台湾同胞书"},{"id":242,"title":"中华人民共和国国防部命令"},{"id":243,"title":"中华人民共和国国防部再告台湾同胞书"},{"id":244,"title":"关于社会主义商品生产问题"},{"id":245,"title":"记者头脑要冷静"},{"id":246,"title":"在武昌会议上的讲话"},{"id":247,"title":"关于帝国主义和一切反动派是不是真老虎的问题"},{"id":248,"title":"在八届六中全会上的讲话"},{"id":249,"title":"马列主义基本原理至今未变，个别结论可以改变"},{"id":250,"title":"在第二次郑州会议上的讲话"},{"id":251,"title":"党内通信——建议召开县五级干部大会"},{"id":252,"title":"关于西藏平叛"},{"id":253,"title":"党内通信——致六级干部的公开信"},{"id":254,"title":"关于西藏问题和台湾问题"},{"id":255,"title":"经济建设是科学，要老老实实学习"},{"id":256,"title":"要政治家办报"},{"id":257,"title":"如实公开报道灾情"},{"id":258,"title":"庐山会议讨论的十八个问题"},{"id":259,"title":"在庐山会议上的多次讲话、批语"},{"id":260,"title":"对彭德怀九月九日信的批示"},{"id":261,"title":"争取比较长的和平时间是可能的"},{"id":262,"title":"同澳共总书记夏基的谈话"},{"id":263,"title":"读苏联政治经济学教科书的谈话"},{"id":264,"title":"坚决制止重刮共产风等违法乱纪行为"},{"id":265,"title":"同蒙哥马利的谈话"},{"id":266,"title":"十年总结"},{"id":267,"title":"同斯诺的谈话——中国人的精神面貌改变了"},{"id":268,"title":"彻底纠正五风"},{"id":269,"title":"永远不许一平二调"},{"id":270,"title":"坚决退赔，刹住共产风"},{"id":271,"title":"大兴调查研究之风"},{"id":272,"title":"要做系统的由历史到现状的调查研究"},{"id":273,"title":"总结经验，教育干部"},{"id":274,"title":"中国在联合国只能有一个代表"},{"id":275,"title":"在七千人大会上的讲话"},{"id":276,"title":"在北戴河中央工作会议中心小组会上的讲话"},{"id":277,"title":"在八届十中全会上的讲话"},{"id":278,"title":"干部参加劳动的伟大意义"},{"id":279,"title":"人的正确思想是从哪里来的？"},{"id":280,"title":"论反对官僚主义"},{"id":281,"title":"支持美国黑人反对种族歧视斗争的声明"},{"id":282,"title":"受压迫的人民总是要起来的"},{"id":283,"title":"革命和建设都要靠自己"},{"id":284,"title":"关于文艺工作的批示"},{"id":285,"title":"加强相互学习，克服固步自封、骄傲自满"},{"id":286,"title":"不搞科学技术，生产力无法提高"},{"id":287,"title":"我国还可能要走一段资本主义复辟的道路"},{"id":288,"title":"中法之间有共同点"},{"id":289,"title":"关于教育革命的谈话"},{"id":290,"title":"以农业为基础，以工业为主导"},{"id":291,"title":"支持被压迫人民反对帝国主义的战争"},{"id":292,"title":"和王海蓉同志的谈话"},{"id":293,"title":"哪里有压迫哪里就有反抗"},{"id":294,"title":"接见日本社会党人士的谈话"},{"id":295,"title":"关于九评苏共中央的公开信的节录"},{"id":296,"title":"中华人民共和国政府声明"},{"id":297,"title":"打破核垄断，消灭核武器"},{"id":298,"title":"中国的大跃进"},{"id":299,"title":"同斯诺的谈话——关于越南战争"},{"id":300,"title":"官僚主义者阶级是革命对象"},{"id":301,"title":"我们希望阿拉伯国家团结起来"},{"id":302,"title":"把医疗卫生工作的重点放到农村去"},{"id":303,"title":"人民给政府饭吃，吃了饭就要为人民服务"},{"id":304,"title":"胜利的信念是从斗争中得来的"},{"id":305,"title":"突出政治，反对折衷主义"},{"id":306,"title":"上面要靠党的领导，下面要靠广大群众"}]},{"name":"第七卷 文化大革命时期【非官方】","sections":[],"articles":[{"id":307,"title":"出版说明"},{"id":308,"title":"静火有言"},{"id":309,"title":"关于农业机械化"},{"id":310,"title":"在中央政治局常委扩大会议上的讲话"},{"id":311,"title":"对中宣部和北京市委的批评"},{"id":312,"title":"学校一律要实行半工半读"},{"id":313,"title":"部队文艺工作座谈会纪要"},{"id":314,"title":"为什么要搞文化大革命"},{"id":315,"title":"各行各业均应一业为主兼学别样"},{"id":316,"title":"中国共产党中央委员会通知——五一六通知"},{"id":317,"title":"同胡志明的谈话"},{"id":318,"title":"给江青的信"},{"id":319,"title":"凡是镇压学生运动的人，都没有好下场"},{"id":320,"title":"工作组要撤，文化革命要依靠革命师生"},{"id":321,"title":"给清华大学附属中学红卫兵的信"},{"id":322,"title":"不许镇压学生运动"},{"id":323,"title":"炮打司令部——我的一张大字报"},{"id":324,"title":"中国共产党中央委员会关于无产阶级文化大革命的决定"},{"id":325,"title":"在中共八届十一中全会闭幕会上的讲话"},{"id":326,"title":"对四位外国专家的大字报的批语"},{"id":327,"title":"驻外机关也要革命化"},{"id":328,"title":"在中央工作会议上的讲话"},{"id":329,"title":"斗争要文明些，坚持文斗，不用武斗"},{"id":330,"title":"对刘少奇到学校做公开检查的批示"},{"id":331,"title":"对文汇报、解放日报夺权事件的谈话"},{"id":332,"title":"论夺权"},{"id":333,"title":"人民解放军应该支持左派广大群众"},{"id":334,"title":"接见卡博和巴卢库时的谈话"},{"id":335,"title":"对上海文化大革命的指示"},{"id":336,"title":"批评二月逆流"},{"id":337,"title":"论革命的三结合"},{"id":338,"title":"关于两条路线斗争的基本问题"},{"id":339,"title":"是义和团侵略了帝国主义了吗？"},{"id":340,"title":"中央军委关于支左工作十条命令"},{"id":341,"title":"接见阿尔巴尼亚军事代表团时的谈话"},{"id":342,"title":"论无产阶级专政下继续革命"},{"id":343,"title":"在听了氢弹会议汇报后的讲话"},{"id":344,"title":"视察华北、中南和华东地区时的重要指示"},{"id":345,"title":"接见刚果（布）总理努马扎莱的谈话"},{"id":346,"title":"关于九大和整党问题的谈话"},{"id":347,"title":"祝贺越南南方民族解放阵线成立七周年的电报"},{"id":348,"title":"关于国家机关的改革和革命委员会的基本经验"},{"id":349,"title":"支持美国黑人抗暴斗争的声明"},{"id":350,"title":"学校教育革命的方向"},{"id":351,"title":"接见首都红代会五大领袖时的谈话"},{"id":352,"title":"医学教育革命的方向"},{"id":353,"title":"广大干部下放劳动是一种重新学习的极好机会"},{"id":354,"title":"在中共八届扩大的十二中全会上的讲话"},{"id":355,"title":"赞成越南又打又谈的方针"},{"id":356,"title":"关于知识青年到农村去的号召"},{"id":357,"title":"对中国共产党第九次全国代表大会的讲话"},{"id":358,"title":"关于战备疏散的指示"},{"id":359,"title":"祝贺越南南方民族解放阵线成立九周年的电报"},{"id":360,"title":"与黎笋的谈话"},{"id":361,"title":"全世界人民团结起来，打败美国侵略者及其一切走狗"},{"id":362,"title":"发展自己的工业和农业不要依靠外国"},{"id":363,"title":"帝国主义怕第三世界"},{"id":364,"title":"国际间的事要由大家商量解决"},{"id":365,"title":"改变国家体制，不设国家主席"},{"id":366,"title":"我的一点意见"},{"id":367,"title":"与斯诺的谈话——关于文化大革命"},{"id":368,"title":"对外宣传工作不可强加于人"},{"id":369,"title":"思想上政治上的路线正确与否是决定一切的"},{"id":370,"title":"恢复联合国席位后的谈话"},{"id":371,"title":"对反革命不要杀，保留活证据"},{"id":372,"title":"会见美国总统尼克松时的谈话"},{"id":373,"title":"中美联合公报中国方面的声明"},{"id":374,"title":"与日本首相田中角荣的谈话"},{"id":375,"title":"深挖洞，广积粮，不称霸"},{"id":376,"title":"祝贺越南人民取得的伟大胜利"},{"id":377,"title":"接见基辛格时的谈话"},{"id":378,"title":"启用邓小平"},{"id":379,"title":"在政治局会议上的讲话"},{"id":380,"title":"中国将修建青藏铁路"},{"id":381,"title":"关于划分三个世界的谈话"},{"id":382,"title":"同英国前首相希思的谈话"},{"id":383,"title":"关于理论问题的谈话要点"},{"id":384,"title":"对在押国民党战犯一律释放"},{"id":385,"title":"要安定团结不要分裂"},{"id":386,"title":"关于水浒的评论"},{"id":387,"title":"中美关系会一点点好起来"},{"id":388,"title":"祝贺印度支那三国抗美救国战争取得胜利"},{"id":389,"title":"走资派还在走，永不翻案靠不住"},{"id":390,"title":"对天安门事件的指示"},{"id":391,"title":"后事交代"},{"id":392,"title":"版本信息"}]}];
+
+// ── Embedded article content ──────────────────────────
+const EMBEDDED = {
+21: `# 反对自由主义
+（一九三七年九月七日）
+
+我们主张积极的思想斗争，因为它是达到党内和革命团体内的团结使之利于战斗的武器。每个共产党员和革命分子，应该拿起这个武器。
+
+但是自由主义取消思想斗争，主张无原则的和平，结果是腐朽庸俗的作风发生，使党和革命团体的某些组织和某些个人在政治上腐化起来。
+
+自由主义有各种表现。
+
+因为是熟人、同乡、同学、知心朋友、亲爱者、老同事、老部下，明知不对，也不同他们作原则上的争论，任其下去，求得和平和亲热。或者轻描淡写地说一顿，不作彻底解决，保持一团和气。结果是有害于团体，也有害于个人。这是第一种。
+
+不负责任的背后批评，不是积极地向组织建议。当面不说，背后乱说；开会不说，会后乱说。心目中没有集体生活的原则，只有自由放任。这是第二种。
+
+事不关己，高高挂起；明知不对，少说为佳；明哲保身，但求无过。这是第三种。
+
+命令不服从，个人意见第一。只要组织照顾，不要组织纪律。这是第四种。
+
+不是为了团结，为了进步，为了把事情弄好，向不正确的意见斗争和争论，而是个人攻击，闹意气，泄私愤，图报复。这是第五种。
+
+听了不正确的议论也不争辩，甚至听了反革命分子的话也不报告，泰然处之，行若无事。这是第六种。
+
+见群众不宣传，不鼓动，不演说，不调查，不询问，不关心其痛痒，漠然置之，忘记了自己是一个共产党员，把一个共产党员混同于一个普通的老百姓。这是第七种。
+
+见损害群众利益的行为不愤恨，不劝告，不制止，不解释，听之任之。这是第八种。
+
+办事不认真，无一定计划，无一定方向，敷衍了事，得过且过，做一天和尚撞一天钟。这是第九种。
+
+自以为对革命有功，摆老资格，大事做不来，小事又不做，工作随便，学习松懈。这是第十种。
+
+自己错了，也已经懂得，又不想改正，自己对自己采取自由主义。这是第十一种。
+
+还可以举出一些。主要的有这十一种。
+
+所有这些，都是自由主义的表现。
+
+革命的集体组织中的自由主义是十分有害的。它是一种腐蚀剂，使团结涣散，关系松懈，工作消极，意见分歧。它使革命队伍失掉严密的组织和纪律，政策不能贯彻到底，党的组织和党所领导的群众发生隔离。这是一种严重的恶劣倾向。
+
+自由主义的来源，在于小资产阶级的自私自利性，以个人利益放在第一位，革命利益放在第二位，因此产生思想上、政治上、组织上的自由主义。
+
+自由主义者以抽象的教条看待马克思主义的原则。他们赞成马克思主义，但是不准备实行之，或不准备完全实行之，不准备拿马克思主义代替自己的自由主义。这些人，马克思主义是有的，自由主义也是有的：说的是马克思主义，行的是自由主义；对人是马克思主义，对己是自由主义。两样货色齐备，各有各的用处。这是一部分人的思想方法。
+
+自由主义是机会主义的一种表现，是和马克思主义根本冲突的。它是消极的东西，客观上起着援助敌人的作用，因此敌人是欢迎我们内部保存自由主义的。自由主义的性质如此，革命队伍中不应该保留它的地位。
+
+我们要用马克思主义的积极精神，克服消极的自由主义。一个共产党员，应该是襟怀坦白，忠实，积极，以革命利益为第一生命，以个人利益服从革命利益；无论何时何地，坚持正确的原则，同一切不正确的思想和行为作不疲倦的斗争，用以巩固党的集体生活，巩固党和群众的联系；关心党和群众比关心个人为重，关心他人比关心自己为重。这样才算得一个共产党员。
+
+一切忠诚、坦白、积极、正直的共产党员团结起来，反对一部分人的自由主义的倾向，使他们改变到正确的方面来。这是思想战线的任务之一。`,
+
+77: `# 为人民服务
+（一九四四年九月八日）
+
+> 这是毛泽东在中共中央警备团追悼张思德的会上的讲演。
+
+我们的共产党和共产党所领导的八路军、新四军，是革命的队伍。我们这个队伍完全是为着解放人民的，是彻底地为人民的利益工作的。张思德同志就是我们这个队伍中的一个同志。
+
+人总是要死的，但死的意义有不同。中国古时候有个文学家叫做司马迁的说过："人固有一死，或重于泰山，或轻于鸿毛。"为人民利益而死，就比泰山还重；替法西斯卖力，替剥削人民和压迫人民的人去死，就比鸿毛还轻。张思德同志是为人民利益而死的，他的死是比泰山还要重的。
+
+因为我们是为人民服务的，所以，我们如果有缺点，就不怕别人批评指出。不管是什么人，谁向我们指出都行。只要你说得对，我们就改正。你说的办法对人民有好处，我们就照你的办。"精兵简政"这一条意见，就是党外人士李鼎铭先生提出来的；他提得好，对人民有好处，我们就采用了。只要我们为人民的利益坚持好的，为人民的利益改正错的，我们这个队伍就一定会兴旺起来。
+
+我们都是来自五湖四海，为了一个共同的革命目标，走到一起来了。我们还要和全国大多数人民走这一条路。我们今天已经领导着有九千一百万人口的根据地，但是还不够，还要更大些，才能取得全民族的解放。我们的同志在困难的时候，要看到成绩，要看到光明，要提高我们的勇气。中国人民正在受难，我们有责任解救他们，我们要努力奋斗。要奋斗就会有牺牲，死人的事是经常发生的。但是我们想到人民的利益，想到大多数人民的痛苦，我们为人民而死，就是死得其所。不过，我们应当尽量地减少那些不必要的牺牲。我们的干部要关心每一个战士，一切革命队伍的人都要互相关心，互相爱护，互相帮助。
+
+今后我们的队伍里，不管死了谁，不管是炊事员，是战士，只要他是做过一些有益的工作的，我们都要给他送葬，开追悼会。这要成为一个制度。这个方法也要介绍到老百姓那里去。村上的人死了，开个追悼会。用这样的方法，寄托我们的哀思，使整个人民团结起来。
+
+---
+
+注释
+
+〔1〕张思德，四川仪陇人，中共中央警备团的战士。他在一九三三年参加红军，经历长征，负过伤，是一个忠实为人民服务的共产党员。一九四四年九月五日在陕北安塞县山中烧炭，因炭窑崩塌而牺牲。
+
+〔2〕司马迁，中国西汉时期著名的文学家和历史学家，著有《史记》一百三十篇。此处引语见《汉书·司马迁传》中的《报任少卿书》，原文是："人固有一死，死有重于泰山，或轻于鸿毛。"
+
+〔3〕李鼎铭（一八八一——一九四七），陕西米脂人，开明绅士。他在一九四一年十一月陕甘宁边区第二届参议会上提出"精兵简政"的提案，并在这次会议上当选为陕甘宁边区政府副主席。`
+};
+
+// ── State ─────────────────────────────────────────────
+marked.setOptions({ breaks: true, gfm: true });
+let flatList = [];
+let curId    = null;
+let fontSize = +localStorage.getItem('fz') || 17;
+let readSet  = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
+
+function applyFz(sz) {
+  document.documentElement.style.setProperty('--rdg-sz', sz + 'px');
+}
+applyFz(fontSize);
+
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '☀ 日间' : '🌙 夜间';
+}
+
+// ── Build flat list ───────────────────────────────────
+function buildFlat() {
+  flatList = [];
+  TOC_DATA.forEach(vol => {
+    (vol.sections || []).forEach(sec =>
+      (sec.articles || []).forEach(a => flatList.push(a))
+    );
+    (vol.articles || []).forEach(a => flatList.push(a));
+  });
+}
+
+// ── Render TOC ────────────────────────────────────────
+function renderToc(q = '') {
+  const tocEl = document.getElementById('toc');
+  const ql = q.toLowerCase();
+  let html = '';
+
+  TOC_DATA.forEach((vol, vi) => {
+    const allArts = [];
+    (vol.sections || []).forEach(sec =>
+      (sec.articles || []).forEach(a => allArts.push({ ...a, sec: sec.name }))
+    );
+    (vol.articles || []).forEach(a => allArts.push(a));
+
+    const matched = q
+      ? allArts.filter(a => a.title.toLowerCase().includes(ql) || vol.name.toLowerCase().includes(ql))
+      : allArts;
+
+    if (q && !matched.length) return;
+
+    const isOpen = !q
+      ? (vi === 0 || matched.some(a => a.id === curId))
+      : true;
+
+    html += `<div class="vol-item${isOpen ? ' open' : ''}" data-vi="${vi}">`;
+    html += `<div class="vol-hdr" onclick="toggleVol(${vi})">
+      <span class="vol-arr">▶</span>
+      <span class="vol-badge">卷${String(vi + 1).padStart(2, '0')}</span>
+      <span class="vol-title">${vol.name}</span>
+    </div><div class="vol-body">`;
+
+    if (vol.sections && vol.sections.length) {
+      const bySec = {};
+      matched.filter(a => a.sec).forEach(a => {
+        (bySec[a.sec] = bySec[a.sec] || []).push(a);
+      });
+      Object.entries(bySec).forEach(([sn, arts]) => {
+        html += `<div class="sec-lbl">${sn}</div>`;
+        arts.forEach(a => { html += artLink(a); });
+      });
+      matched.filter(a => !a.sec).forEach(a => { html += artLink(a); });
+    } else {
+      matched.forEach(a => { html += artLink(a); });
+    }
+
+    html += `</div></div>`;
+  });
+
+  tocEl.innerHTML = html || '<div style="padding:20px;text-align:center;color:var(--text3)">无匹配结果</div>';
+}
+
+function artLink(a) {
+  const active = a.id === curId ? ' active' : '';
+  const read   = readSet.has(a.id) ? ' read' : '';
+  return `<div class="art${active}${read}" id="al${a.id}" onclick="loadArt(${a.id})">
+    <span class="art-n">${a.id}</span>
+    <span style="flex:1">${a.title}</span>
+    <span class="art-ck">✓</span>
+  </div>`;
+}
+
+function toggleVol(vi) {
+  document.querySelector(`.vol-item[data-vi="${vi}"]`)?.classList.toggle('open');
+}
+
+// Search
+document.getElementById('searchBox').addEventListener('input', function() {
+  renderToc(this.value);
+});
+
+// ── Load article ──────────────────────────────────────
+function loadArt(id, scrollTop = true) {
+  if (id === curId) { closeSidebar(); return; }
+  curId = id;
+  localStorage.setItem('last', id);
+
+  document.querySelectorAll('.art').forEach(el => el.classList.remove('active'));
+  const lnk = document.getElementById('al' + id);
+  if (lnk) {
+    lnk.classList.add('active');
+    lnk.closest('.vol-item')?.classList.add('open');
+    lnk.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  closeSidebar();
+  if (scrollTop) document.getElementById('main').scrollTo({ top: 0, behavior: 'instant' });
+
+  const wrap = document.getElementById('artWrap');
+
+  if (EMBEDDED[id]) {
+    renderProse(EMBEDDED[id], id, wrap);
+  } else {
+    const art = flatList.find(a => a.id === id);
+    const idx = flatList.findIndex(a => a.id === id);
+    const prev = idx > 0 ? flatList[idx - 1] : null;
+    const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
+    wrap.innerHTML = `
+      <div class="noart">
+        <div class="noart-star">★</div>
+        <div class="noart-h">${art?.title || ''}</div>
+        <div class="noart-p">此篇完整内容请在本地服务器中查阅<br>运行以下命令后访问 <strong>http://localhost:8080</strong></div>
+        <code class="noart-cmd">python3 server.py</code>
+      </div>
+      <nav class="art-nav">
+        <button class="nav-b" ${!prev ? 'disabled' : `onclick="loadArt(${prev.id})"`}>
+          <span class="nav-lbl">← 上一篇</span>
+          <span class="nav-ttl">${prev?.title || ''}</span>
+        </button>
+        <button class="nav-b nr" ${!next ? 'disabled' : `onclick="loadArt(${next.id})"`}>
+          <span class="nav-lbl">下一篇 →</span>
+          <span class="nav-ttl">${next?.title || ''}</span>
+        </button>
+      </nav>`;
+    document.title = (art?.title || '读毛选') + ' — 读毛选';
+  }
+
+  readSet.add(id);
+  localStorage.setItem('rd', JSON.stringify([...readSet]));
+  updateStat();
+  document.getElementById('al' + id)?.classList.add('read');
+}
+
+function renderProse(md, id, wrap) {
+  const parts = md.split(/\n---+\n/);
+  let html = marked.parse(parts[0]);
+  if (parts[1]) html += `<div class="footnotes">${marked.parse(parts.slice(1).join('\n'))}</div>`;
+
+  const idx = flatList.findIndex(a => a.id === id);
+  const prev = idx > 0 ? flatList[idx - 1] : null;
+  const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
+
+  wrap.innerHTML = `
+    <div class="prose">${html}</div>
+    <nav class="art-nav">
+      <button class="nav-b" ${!prev ? 'disabled' : `onclick="loadArt(${prev.id})"`}>
+        <span class="nav-lbl">← 上一篇</span>
+        <span class="nav-ttl">${prev?.title || ''}</span>
+      </button>
+      <button class="nav-b nr" ${!next ? 'disabled' : `onclick="loadArt(${next.id})"`}>
+        <span class="nav-lbl">下一篇 →</span>
+        <span class="nav-ttl">${next?.title || ''}</span>
+      </button>
+    </nav>`;
+
+  const h1 = wrap.querySelector('h1');
+  document.title = (h1 ? h1.textContent : '') + ' — 读毛选';
+}
+
+// ── Reading progress bar ──────────────────────────────
+document.getElementById('main').addEventListener('scroll', function() {
+  const max = this.scrollHeight - this.clientHeight;
+  document.getElementById('rdFil').style.width = (max > 0 ? this.scrollTop / max * 100 : 0) + '%';
+});
+
+// ── Stats ─────────────────────────────────────────────
+function updateStat() {
+  const r = readSet.size, t = flatList.length;
+  document.getElementById('statTxt').textContent = `已读 ${r} / ${t} 篇`;
+  document.getElementById('sFill').style.width = t ? (r / t * 100) + '%' : '0%';
+}
+
+// ── Font ──────────────────────────────────────────────
+function chFont(d) {
+  fontSize = d === 0 ? 17 : Math.min(22, Math.max(13, fontSize + d));
+  applyFz(fontSize);
+  localStorage.setItem('fz', fontSize);
+}
+
+// ── Theme ─────────────────────────────────────────────
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const nxt = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nxt);
+  localStorage.setItem('theme', nxt);
+  document.getElementById('themeBtn').textContent = nxt === 'dark' ? '☀ 日间' : '🌙 夜间';
+}
+
+// ── Mobile sidebar ────────────────────────────────────
+document.getElementById('menuBtn').onclick = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('ovl').classList.toggle('on');
+};
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('ovl').classList.remove('on');
+}
+
+// ── Keyboard ──────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || !curId) return;
+  const idx = flatList.findIndex(a => a.id === curId);
+  if (e.key === 'ArrowLeft'  && idx > 0)                   loadArt(flatList[idx - 1].id);
+  if (e.key === 'ArrowRight' && idx < flatList.length - 1) loadArt(flatList[idx + 1].id);
+});
+
+// ── Init ──────────────────────────────────────────────
+buildFlat();
+renderToc();
+updateStat();
+// Open to 反对自由主义 by default
+const lastId = +localStorage.getItem('last');
+loadArt(lastId && flatList.some(a => a.id === lastId) ? lastId : 21, false);
+</script>
