@@ -696,12 +696,14 @@ a{color:inherit;text-decoration:none}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script>
 // ── State ──────────────────────────────────────────────
-let toc           = [];
-let flatList      = [];
-let curId         = null;
-let curAnnotations = null;   // {meta, paragraphs} for current article
-let fontSize      = +localStorage.getItem('fz') || 17;
-let readSet       = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
+let toc      = [];      // [{vi, name, count}] volume summaries only
+let volCache = {};      // vi → full volume data (lazy loaded on demand)
+let flatList = [];      // [{id, title}] all articles in order (for nav/progress)
+let curId    = null;
+let curAnnotations = null;
+let fontSize = +localStorage.getItem('fz') || 17;
+let readSet  = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
+let searchVer = 0;      // cancel stale searches
 
 // ── Boot ───────────────────────────────────────────────
 applyTheme(localStorage.getItem('theme') || 'light');
@@ -709,12 +711,17 @@ setFontSize(fontSize);
 
 marked.setOptions({ breaks: true, gfm: true });
 
-// ── TOC fetch ──────────────────────────────────────────
+// ── Init ───────────────────────────────────────────────
 async function init() {
   try {
-    const r = await fetch('/api/toc');
-    toc = await r.json();
-    buildFlat(toc);
+    // Load volume summaries + flat article list in parallel (both are tiny)
+    const [tocRes, artsRes] = await Promise.all([
+      fetch('/api/toc'),
+      fetch('/api/articles')
+    ]);
+    toc      = await tocRes.json();
+    flatList = await artsRes.json();
+
     renderToc();
     updateStat();
 
@@ -726,68 +733,134 @@ async function init() {
   }
 }
 
-function buildFlat(vols) {
-  flatList = [];
-  vols.forEach(vol => {
-    (vol.sections || []).forEach(sec =>
-      (sec.articles || []).forEach(a => flatList.push(a))
-    );
-    (vol.articles || []).forEach(a => flatList.push(a));
+// ── Render TOC skeleton (volume headers only) ─────────
+function renderToc(filter = '') {
+  const q = filter.trim();
+  if (q) { renderTocSearch(q); return; }
+
+  const tocEl = document.getElementById('toc');
+  let html = '';
+
+  toc.forEach((vol, vi) => {
+    // Open first volume by default, or whichever volume contains the current article
+    const isCurVol = volCache[vi] && getVolArts(volCache[vi]).some(a => a.id === curId);
+    const isOpen   = (vi === 0) || isCurVol;
+
+    html += `<div class="vol-item${isOpen ? ' open' : ''}" data-vi="${vi}">
+      <div class="vol-hdr" onclick="toggleVol(${vi})">
+        <span class="vol-arrow">▶</span>
+        <span class="vol-badge">卷${String(vi+1).padStart(2,'0')}</span>
+        <span class="vol-title">${vol.name}</span>
+      </div>
+      <div class="vol-body" id="volBody${vi}"></div>
+    </div>`;
+  });
+
+  tocEl.innerHTML = html ||
+    '<div style="padding:20px;color:var(--text-2);text-align:center">无匹配</div>';
+
+  // Trigger lazy load only for volumes that are already open
+  toc.forEach((_, vi) => {
+    if (document.querySelector(`.vol-item[data-vi="${vi}"]`)?.classList.contains('open'))
+      loadVolume(vi);
   });
 }
 
-// ── Render TOC ────────────────────────────────────────
-function renderToc(filter = '') {
-  const q = filter.trim();
+// ── Lazy load one volume ──────────────────────────────
+async function loadVolume(vi) {
+  if (volCache[vi]) { renderVolBody(vi); return; }
+
+  const body = document.getElementById('volBody' + vi);
+  if (body) body.innerHTML = '<div style="padding:8px 12px;color:var(--text-3);font-size:12px">加载中…</div>';
+
+  try {
+    const res = await fetch(`/api/toc/volume?vi=${vi}`);
+    volCache[vi] = await res.json();
+    renderVolBody(vi);
+  } catch(e) {
+    if (body) body.innerHTML = '<div style="padding:8px 12px;color:var(--red)">加载失败</div>';
+  }
+}
+
+function renderVolBody(vi) {
+  const vol  = volCache[vi];
+  const body = document.getElementById('volBody' + vi);
+  if (!vol || !body) return;
+
+  let html = '';
+  if (vol.sections && vol.sections.length) {
+    vol.sections.forEach(sec => {
+      if (!sec.articles?.length) return;
+      html += `<div class="sec-hdr">${sec.name}</div>`;
+      sec.articles.forEach(a => { html += artLink(a); });
+    });
+    (vol.articles || []).forEach(a => { html += artLink(a); });
+  } else {
+    (vol.articles || []).forEach(a => { html += artLink(a); });
+  }
+
+  body.innerHTML = html;
+}
+
+// ── Search: loads all volumes first ──────────────────
+async function renderTocSearch(q) {
+  const ver = ++searchVer;
   const tocEl = document.getElementById('toc');
+  tocEl.innerHTML = '<div style="padding:20px;color:var(--text-2);text-align:center">搜索中…</div>';
+
+  // Load all uncached volumes in parallel
+  await Promise.all(toc.map((_, vi) => loadVolume(vi)));
+  if (ver !== searchVer) return; // a newer search came in, abort
 
   let html = '';
   toc.forEach((vol, vi) => {
+    const fullVol = volCache[vi];
+    if (!fullVol) return;
+
     const matched = [];
-    (vol.sections || []).forEach(sec =>
+    (fullVol.sections || []).forEach(sec =>
       (sec.articles || []).forEach(a => {
-        if (!q || a.title.includes(q) || vol.name.includes(q) || sec.name.includes(q))
-          matched.push({ ...a, sec: sec.name });
+        if (a.title.includes(q) || vol.name.includes(q) || sec.name.includes(q))
+          matched.push({ ...a, _sec: sec.name });
       })
     );
-    (vol.articles || []).forEach(a => {
-      if (!q || a.title.includes(q) || vol.name.includes(q))
-        matched.push(a);
+    (fullVol.articles || []).forEach(a => {
+      if (a.title.includes(q) || vol.name.includes(q)) matched.push(a);
     });
+    if (!matched.length) return;
 
-    if (q && !matched.length) return;
+    html += `<div class="vol-item open" data-vi="${vi}">
+      <div class="vol-hdr" onclick="toggleVol(${vi})">
+        <span class="vol-arrow">▶</span>
+        <span class="vol-badge">卷${String(vi+1).padStart(2,'0')}</span>
+        <span class="vol-title">${vol.name}</span>
+      </div>
+      <div class="vol-body" id="volBody${vi}">`;
 
-    const isOpen = !q
-      ? (vi === 0 || matched.some(a => a.id === curId))
-      : true;
-
-    html += `<div class="vol-item${isOpen ? ' open' : ''}" data-vi="${vi}">`;
-    html += `<div class="vol-hdr" onclick="toggleVol(${vi})">
-      <span class="vol-arrow">▶</span>
-      <span class="vol-badge">卷${String(vi+1).padStart(2,'0')}</span>
-      <span class="vol-title">${vol.name}</span>
-    </div>`;
-    html += `<div class="vol-body">`;
-
-    if (vol.sections && vol.sections.length) {
+    if (fullVol.sections && fullVol.sections.length) {
       const bySec = {};
-      matched.filter(a => a.sec).forEach(a => {
-        (bySec[a.sec] = bySec[a.sec] || []).push(a);
-      });
+      matched.filter(a => a._sec).forEach(a => { (bySec[a._sec] = bySec[a._sec] || []).push(a); });
       Object.entries(bySec).forEach(([secName, arts]) => {
         html += `<div class="sec-hdr">${secName}</div>`;
         arts.forEach(a => { html += artLink(a); });
       });
-      matched.filter(a => !a.sec).forEach(a => { html += artLink(a); });
+      matched.filter(a => !a._sec).forEach(a => { html += artLink(a); });
     } else {
       matched.forEach(a => { html += artLink(a); });
     }
-
     html += `</div></div>`;
   });
 
   tocEl.innerHTML = html ||
     '<div style="padding:20px;color:var(--text-2);text-align:center">无匹配</div>';
+}
+
+// ── Helpers ───────────────────────────────────────────
+function getVolArts(vol) {
+  const arts = [];
+  (vol.sections || []).forEach(s => arts.push(...(s.articles || [])));
+  arts.push(...(vol.articles || []));
+  return arts;
 }
 
 function artLink(a) {
@@ -800,8 +873,12 @@ function artLink(a) {
   </div>`;
 }
 
-function toggleVol(vi) {
-  document.querySelector(`.vol-item[data-vi="${vi}"]`)?.classList.toggle('open');
+async function toggleVol(vi) {
+  const item = document.querySelector(`.vol-item[data-vi="${vi}"]`);
+  if (!item) return;
+  const wasOpen = item.classList.contains('open');
+  item.classList.toggle('open');
+  if (!wasOpen) await loadVolume(vi); // lazy load on first open
 }
 
 document.getElementById('searchBox').addEventListener('input', function() {
@@ -815,12 +892,43 @@ async function loadArt(id, scrollTop = true) {
   curAnnotations = null;
   localStorage.setItem('last', id);
 
+  // Find which volume this article belongs to and ensure it's loaded
+  const vi = toc.findIndex((_, i) => {
+    const v = volCache[i];
+    return v && getVolArts(v).some(a => a.id === id);
+  });
+
+  // If volume not cached yet, figure out which volume it's in by article order
+  if (vi === -1) {
+    // Determine volume index from flatList position and load it lazily
+    const artIdx = flatList.findIndex(a => a.id === id);
+    if (artIdx !== -1) {
+      // Load all volumes until we find the one containing this article
+      for (let i = 0; i < toc.length; i++) {
+        if (!volCache[i]) await loadVolume(i);
+        if (getVolArts(volCache[i]).some(a => a.id === id)) break;
+      }
+    }
+  }
+
   document.querySelectorAll('.art-lnk').forEach(el => el.classList.remove('active'));
   const lnk = document.getElementById('al' + id);
   if (lnk) {
     lnk.classList.add('active');
     lnk.closest('.vol-item')?.classList.add('open');
     lnk.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  } else {
+    // Article link not in DOM yet — find and open its volume
+    for (let i = 0; i < toc.length; i++) {
+      if (volCache[i] && getVolArts(volCache[i]).some(a => a.id === id)) {
+        const item = document.querySelector(`.vol-item[data-vi="${i}"]`);
+        if (item) item.classList.add('open');
+        renderVolBody(i);
+        const lnk2 = document.getElementById('al' + id);
+        if (lnk2) { lnk2.classList.add('active'); lnk2.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+        break;
+      }
+    }
   }
 
   const wrap = document.getElementById('artWrap');

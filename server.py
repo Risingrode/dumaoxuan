@@ -85,7 +85,34 @@ class Handler(BaseHTTPRequestHandler):
         if path in ('/', '/index.html'):
             self._file(os.path.join(BASE_DIR, 'index.html'), 'text/html; charset=utf-8')
         elif path == '/api/toc':
-            self._json(TOC)
+            # Volume summaries only — articles loaded lazily per volume
+            summaries = []
+            for i, v in enumerate(TOC):
+                count = sum(len(s['articles']) for s in v.get('sections', []))
+                count += len(v.get('articles', []))
+                summaries.append({'vi': i, 'name': v['name'], 'count': count})
+            self._json(summaries)
+        elif path == '/api/toc/volume':
+            qs = parse_qs(parsed.query)
+            try:
+                vi = int(qs['vi'][0])
+            except (KeyError, ValueError, IndexError):
+                self.send_error(400, 'Bad Request')
+                return
+            if 0 <= vi < len(TOC):
+                self._json(TOC[vi])
+            else:
+                self.send_error(404, 'Volume not found')
+        elif path == '/api/articles':
+            # Flat ordered list of all articles (for navigation/progress)
+            arts = []
+            for v in TOC:
+                for s in v.get('sections', []):
+                    for a in s['articles']:
+                        arts.append({'id': a['id'], 'title': a['title']})
+                for a in v.get('articles', []):
+                    arts.append({'id': a['id'], 'title': a['title']})
+            self._json(arts)
         elif path == '/api/article':
             qs = parse_qs(parsed.query)
             try:
