@@ -143,7 +143,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == '__main__':
-    port = 8080
+    port = int(os.environ.get('PORT', 8080))
     srv = HTTPServer(('0.0.0.0', port), Handler)
     print(f'\n★  读毛选  http://localhost:{port}\n')
     try:
