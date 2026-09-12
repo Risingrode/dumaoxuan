@@ -1,0 +1,16 @@
+{
+  "name": "读毛选 — 毛泽东选集",
+  "short_name": "读毛选",
+  "description": "毛泽东选集在线阅读，含通俗注解、历史背景、情景练习",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1c1c1e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

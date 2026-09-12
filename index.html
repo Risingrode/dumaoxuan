@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1c1c1e">
 <title>读毛选 — 毛泽东选集</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
 <style>
 /* ── Design tokens ─────────────────────────────────── */
 :root {
@@ -15,7 +18,6 @@
   --ann-w:    340px;
   --reading-sz: 15px;
 
-  /* Sidebar — always dark */
   --sb-bg:       #1c1c1e;
   --sb-hover:    #2c2c2e;
   --sb-active:   #3a3a3c;
@@ -25,7 +27,6 @@
   --sb-text-3:   #636366;
   --sb-accent:   #ffffff;
 
-  /* Main — light */
   --bg:          #ffffff;
   --bg-2:        #f9f9f9;
   --text:        #09090b;
@@ -34,24 +35,20 @@
   --border:      #e4e4e7;
   --border-2:    #f4f4f5;
 
-  /* Header */
   --hdr-bg:      #ffffff;
   --hdr-border:  #e4e4e7;
   --hdr-text:    #09090b;
   --hdr-text-2:  #71717a;
 
-  /* Blockquote */
   --bq-bg:       #f4f4f5;
   --bq-border:   #d4d4d8;
 
-  /* Annotation */
   --ann-bg:      #ffffff;
   --ann-border:  #e4e4e7;
   --ann-active-bdr: #2563eb;
   --ann-active-bg:  rgba(37,99,235,.04);
   --ann-hover-bg:   rgba(0,0,0,.03);
 
-  /* Progress */
   --prog:        #2563eb;
   --prog-dim:    rgba(37,99,235,.15);
 
@@ -61,6 +58,8 @@
 
   --radius:      8px;
   --ease:        cubic-bezier(.4,0,.2,1);
+
+  --font-reading: 'Noto Serif SC','SimSun','宋体',Georgia,serif;
 }
 
 [data-theme="dark"] {
@@ -128,18 +127,10 @@ a{color:inherit;text-decoration:none}
 .hdr-sb-btn:hover{background:var(--border-2);color:var(--text)}
 .hdr-brand{
   display:flex;align-items:baseline;
-  gap:8px;
-  padding:0 4px;
+  gap:8px;padding:0 4px;
 }
-.hdr-title{
-  font-size:15px;font-weight:600;
-  letter-spacing:.02em;
-  color:var(--text);
-}
-.hdr-subtitle{
-  font-size:11px;color:var(--text-3);
-  letter-spacing:.04em;
-}
+.hdr-title{font-size:15px;font-weight:600;letter-spacing:.02em;color:var(--text)}
+.hdr-subtitle{font-size:11px;color:var(--text-3);letter-spacing:.04em}
 .hdr-spacer{flex:1}
 .hdr-controls{display:flex;align-items:center;gap:6px}
 
@@ -149,21 +140,40 @@ a{color:inherit;text-decoration:none}
   border-radius:6px;overflow:hidden;
 }
 .font-ctrl button{
-  padding:4px 9px;
-  font-size:12px;color:var(--text-2);
+  padding:4px 9px;font-size:12px;color:var(--text-2);
   transition:background .15s,color .15s;
 }
 .font-ctrl button:hover{background:var(--border-2);color:var(--text)}
 
-.theme-btn{
+.hdr-btn{
   padding:5px 12px;
   border:1px solid var(--border);
   border-radius:6px;
   font-size:12px;color:var(--text-2);
   transition:background .15s,color .15s;
   white-space:nowrap;
+  position:relative;
 }
-.theme-btn:hover{background:var(--border-2);color:var(--text)}
+.hdr-btn:hover{background:var(--border-2);color:var(--text)}
+.hdr-btn.active{color:var(--ann-active-bdr);border-color:var(--ann-active-bdr)}
+
+/* Font picker dropdown */
+.font-picker{
+  position:absolute;top:100%;right:0;margin-top:6px;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:var(--shadow-md);
+  padding:4px;min-width:140px;
+  z-index:400;display:none;
+}
+.font-picker.open{display:block}
+.font-pick-item{
+  display:block;width:100%;text-align:left;
+  padding:7px 12px;border-radius:5px;
+  font-size:12.5px;color:var(--text-2);
+  transition:background .1s;
+}
+.font-pick-item:hover{background:var(--bg-2)}
+.font-pick-item.active{color:var(--ann-active-bdr);font-weight:500}
 
 /* ── Sidebar ─────────────────────────────────────────── */
 .sidebar{
@@ -202,6 +212,25 @@ a{color:inherit;text-decoration:none}
   border-color:rgba(255,255,255,.25);
 }
 
+/* Sidebar tabs (目录 / 书签 / 统计) */
+.sb-tabs{
+  display:flex;
+  border-bottom:1px solid var(--sb-border);
+  flex-shrink:0;
+}
+.sb-tab{
+  flex:1;
+  padding:7px 0;
+  text-align:center;
+  font-size:11px;
+  color:var(--sb-text-3);
+  cursor:pointer;
+  transition:color .15s,border-color .15s;
+  border-bottom:2px solid transparent;
+}
+.sb-tab:hover{color:var(--sb-text-2)}
+.sb-tab.active{color:var(--sb-text);border-bottom-color:var(--sb-text)}
+
 .sb-stat{
   padding:6px 12px;
   font-size:11px;color:var(--sb-text-3);
@@ -213,72 +242,124 @@ a{color:inherit;text-decoration:none}
 .sb-prog{flex:1;height:2px;background:rgba(255,255,255,.1);border-radius:1px}
 .sb-prog-fill{height:100%;background:var(--sb-text-2);border-radius:1px;transition:width .4s}
 
-.sb-toc{
-  overflow-y:auto;flex:1;padding:4px 0 20px;
-}
+.sb-panel{overflow-y:auto;flex:1;display:none}
+.sb-panel.active{display:block}
+
+.sb-toc{padding:4px 0 20px}
 .sb-toc::-webkit-scrollbar{width:3px}
 .sb-toc::-webkit-scrollbar-track{background:transparent}
 .sb-toc::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
 
-/* Vol */
+/* Bookmarks panel */
+.sb-bookmarks{padding:8px}
+.bm-empty{padding:20px 12px;color:var(--sb-text-3);font-size:12px;text-align:center;line-height:1.8}
+.bm-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 10px;border-radius:6px;cursor:pointer;
+  transition:background .1s;
+  margin-bottom:2px;
+}
+.bm-item:hover{background:var(--sb-hover)}
+.bm-item-text{
+  flex:1;font-size:11.5px;color:var(--sb-text-2);
+  line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.bm-item-title{font-size:10px;color:var(--sb-text-3);margin-top:2px}
+.bm-item-del{
+  flex-shrink:0;font-size:10px;color:var(--sb-text-3);
+  padding:2px 4px;border-radius:3px;opacity:0;
+  transition:opacity .15s,background .15s;
+}
+.bm-item:hover .bm-item-del{opacity:1}
+.bm-item-del:hover{background:rgba(255,255,255,.1);color:#ef4444}
+
+/* Stats panel */
+.sb-stats{padding:12px}
+.stats-card{
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--sb-border);
+  border-radius:6px;
+  padding:12px;margin-bottom:8px;
+}
+.stats-label{font-size:10px;color:var(--sb-text-3);letter-spacing:.06em;margin-bottom:4px}
+.stats-val{font-size:18px;font-weight:600;color:var(--sb-text);font-variant-numeric:tabular-nums}
+.stats-sub{font-size:10px;color:var(--sb-text-3);margin-top:2px}
+.stats-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:6px;overflow:hidden}
+.stats-bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.stats-vol-row{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 0;font-size:11px;color:var(--sb-text-2);
+}
+.stats-vol-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stats-vol-bar{flex:0 0 60px;height:3px;background:rgba(255,255,255,.08);border-radius:1.5px;overflow:hidden}
+.stats-vol-bar-fill{height:100%;background:var(--sb-text-2);border-radius:1.5px}
+.stats-vol-pct{font-size:10px;color:var(--sb-text-3);min-width:28px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Full-text search results */
+.search-results{padding:4px 0 20px}
+.search-result{
+  padding:8px 12px;cursor:pointer;
+  transition:background .1s;
+}
+.search-result:hover{background:var(--sb-hover)}
+.search-result-title{font-size:12px;color:var(--sb-text);font-weight:500}
+.search-result-snippet{
+  font-size:11px;color:var(--sb-text-3);line-height:1.6;
+  margin-top:2px;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.search-result-snippet mark{color:var(--sb-accent);background:none;font-weight:600}
+
+/* Vol/article links */
 .vol-hdr{
   display:flex;align-items:center;
-  padding:7px 10px;
-  cursor:pointer;gap:6px;
-  user-select:none;
-  transition:background .12s;
+  padding:7px 10px;cursor:pointer;gap:6px;
+  user-select:none;transition:background .12s;
 }
 .vol-hdr:hover{background:var(--sb-hover)}
 .vol-arrow{
   width:14px;height:14px;
   display:flex;align-items:center;justify-content:center;
   font-size:8px;color:var(--sb-text-3);
-  flex-shrink:0;
-  transition:transform .18s;
+  flex-shrink:0;transition:transform .18s;
 }
 .vol-item.open .vol-arrow{transform:rotate(90deg)}
 .vol-num{
-  font-size:10px;font-weight:600;
-  color:var(--sb-text-3);
-  flex-shrink:0;
-  min-width:20px;
-  font-variant-numeric:tabular-nums;
+  font-size:10px;font-weight:600;color:var(--sb-text-3);
+  flex-shrink:0;min-width:20px;font-variant-numeric:tabular-nums;
 }
-.vol-title{
-  font-size:12px;font-weight:500;
-  line-height:1.5;color:var(--sb-text);flex:1;
-}
+.vol-title{font-size:12px;font-weight:500;line-height:1.5;color:var(--sb-text);flex:1}
 .vol-body{display:none}
 .vol-item.open .vol-body{display:block}
 
-/* Section */
 .sec-hdr{
   padding:5px 10px 4px 28px;
   font-size:10.5px;font-weight:500;
   color:var(--sb-text-3);
-  letter-spacing:.05em;
-  text-transform:none;
-  margin-top:3px;
+  letter-spacing:.05em;margin-top:3px;
 }
 
-/* Article link */
 .art-lnk{
-  display:flex;align-items:baseline;
+  display:flex;align-items:center;
   padding:4px 10px 4px 28px;
   font-size:12px;color:var(--sb-text-2);
-  cursor:pointer;gap:6px;
-  line-height:1.55;
+  cursor:pointer;gap:6px;line-height:1.55;
   transition:background .1s,color .1s;
 }
 .art-lnk:hover{background:var(--sb-hover);color:var(--sb-text)}
-.art-lnk.active{
-  background:var(--sb-active);color:var(--sb-accent);
-  font-weight:500;
-}
+.art-lnk.active{background:var(--sb-active);color:var(--sb-accent);font-weight:500}
 .art-lnk.read:not(.active){color:var(--sb-text-3)}
 .art-n{font-size:9.5px;opacity:.45;flex-shrink:0;font-variant-numeric:tabular-nums;min-width:20px}
 .art-check{font-size:8px;flex-shrink:0;color:var(--sb-text-3);margin-left:auto;display:none}
 .art-lnk.read:not(.active) .art-check{display:block}
+.art-badges{display:flex;gap:3px;margin-left:auto;flex-shrink:0}
+.art-badge{
+  font-size:8px;padding:1px 4px;border-radius:3px;
+  line-height:1.2;font-weight:600;
+}
+.art-badge.ann{color:#60a5fa;background:rgba(96,165,250,.12)}
+.art-badge.card{color:#f59e0b;background:rgba(245,158,11,.12)}
 
 /* ── Overlay ─────────────────────────────────────────── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:190}
@@ -301,7 +382,6 @@ a{color:inherit;text-decoration:none}
 .prog-bar{position:sticky;top:0;height:2px;background:var(--prog-dim);z-index:10}
 .prog-fill{height:100%;background:var(--prog);width:0;transition:width .08s linear}
 
-/* Art wrap */
 .art-wrap{
   max-width:720px;
   margin:0 auto;
@@ -318,13 +398,11 @@ a{color:inherit;text-decoration:none}
   width:56px;height:56px;border-radius:50%;
   background:var(--border-2);
   display:flex;align-items:center;justify-content:center;
-  font-size:24px;color:var(--text-3);
-  margin-bottom:8px;
+  font-size:24px;color:var(--text-3);margin-bottom:8px;
 }
 .welcome-h{font-size:22px;font-weight:600;letter-spacing:.03em}
 .welcome-p{font-size:13.5px;color:var(--text-2);line-height:2;max-width:320px}
 
-/* Loading */
 .loading{
   display:flex;align-items:center;justify-content:center;
   min-height:50vh;color:var(--text-3);font-size:13px;
@@ -332,22 +410,19 @@ a{color:inherit;text-decoration:none}
 
 /* ── Prose ───────────────────────────────────────────── */
 .prose{
-  font-family:'Noto Serif SC','SimSun','宋体',Georgia,serif;
+  font-family:var(--font-reading);
   font-size:var(--reading-sz);
   line-height:2;
   color:var(--text);
 }
 .prose h1{
-  font-size:1.5em;font-weight:700;
-  line-height:1.4;margin-bottom:.25em;
-  font-family:'Noto Serif SC',serif;
-  letter-spacing:.04em;
+  font-size:1.5em;font-weight:700;line-height:1.4;margin-bottom:.25em;
+  font-family:var(--font-reading);letter-spacing:.04em;
 }
 .prose h2{
   font-size:1.15em;font-weight:600;
   margin-top:2em;margin-bottom:.7em;
-  padding-bottom:.3em;
-  border-bottom:1px solid var(--border);
+  padding-bottom:.3em;border-bottom:1px solid var(--border);
 }
 .prose h3{font-size:1.05em;font-weight:600;margin-top:1.6em;margin-bottom:.5em}
 .prose h1+p{text-indent:0;color:var(--text-2);font-size:.88em;margin-bottom:1.2em}
@@ -365,10 +440,8 @@ a{color:inherit;text-decoration:none}
 .prose blockquote p:last-child{margin-bottom:0}
 .prose hr{border:none;border-top:1px solid var(--border);margin:2.2em 0 1.8em}
 .prose .footnotes{
-  font-size:.8em;color:var(--text-3);
-  line-height:1.85;
-  border-top:1px solid var(--border);
-  margin-top:2.5em;padding-top:1.5em;
+  font-size:.8em;color:var(--text-3);line-height:1.85;
+  border-top:1px solid var(--border);margin-top:2.5em;padding-top:1.5em;
 }
 .prose .footnotes p{text-indent:0;margin-bottom:.7em}
 .prose strong{font-weight:700}
@@ -378,17 +451,14 @@ a{color:inherit;text-decoration:none}
 
 /* ── Article meta panel ─────────────────────────────── */
 .art-meta{
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  margin-bottom:2em;
-  overflow:hidden;
+  border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:2em;overflow:hidden;
   font-family:'Inter','Noto Sans SC',sans-serif;
 }
 .art-meta-hdr{
   display:flex;align-items:center;gap:8px;
   padding:10px 14px;cursor:pointer;user-select:none;
-  background:var(--bg-2);
-  transition:background .15s;
+  background:var(--bg-2);transition:background .15s;
 }
 .art-meta-hdr:hover{background:var(--border-2)}
 .art-meta-icon{font-size:14px;line-height:1;color:var(--text-3)}
@@ -400,9 +470,8 @@ a{color:inherit;text-decoration:none}
 .art-meta-sect{margin-bottom:14px}
 .art-meta-sect:last-child{margin-bottom:0}
 .art-meta-sect-label{
-  font-size:10px;font-weight:600;
-  color:var(--text-3);letter-spacing:.1em;
-  text-transform:uppercase;margin-bottom:6px;
+  font-size:10px;font-weight:600;color:var(--text-3);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;
 }
 .art-meta-sect-text{font-size:13px;color:var(--text-2);line-height:1.9}
 .art-meta-events{list-style:none;padding:0}
@@ -412,8 +481,7 @@ a{color:inherit;text-decoration:none}
 }
 .art-meta-events li::before{
   content:'';position:absolute;left:0;top:.7em;
-  width:4px;height:4px;border-radius:50%;
-  background:var(--text-3);
+  width:4px;height:4px;border-radius:50%;background:var(--text-3);
 }
 
 /* ── Annotated paragraphs ───────────────────────────── */
@@ -421,8 +489,7 @@ a{color:inherit;text-decoration:none}
 .para-block.has-ann>p{
   cursor:pointer;
   border-left:2px solid transparent;
-  padding-left:10px;
-  margin-left:-12px;
+  padding-left:10px;margin-left:-12px;
   transition:border-color .15s,background .15s;
 }
 .para-block.has-ann>p:hover{
@@ -434,24 +501,25 @@ a{color:inherit;text-decoration:none}
   border-left-color:var(--ann-active-bdr);
 }
 
-/* Annotation tip banner */
+/* Bookmark indicator on paragraphs */
+.para-block.bookmarked>p::after{
+  content:'';position:absolute;right:-4px;top:4px;
+  width:8px;height:8px;border-radius:50%;
+  background:#f59e0b;
+}
+
 .ann-tip{
   display:flex;align-items:center;gap:8px;
-  padding:9px 14px;
-  background:var(--bg-2);
-  border:1px solid var(--border);
-  border-radius:6px;
+  padding:9px 14px;background:var(--bg-2);
+  border:1px solid var(--border);border-radius:6px;
   font-size:12px;color:var(--text-3);
-  margin-bottom:1.6em;
+  margin-bottom:1em;
   font-family:'Inter','Noto Sans SC',sans-serif;
 }
 
 /* ── Right annotation panel ─────────────────────────── */
 .ann-panel{
-  position:fixed;
-  right:0;
-  top:var(--hdr-h);
-  bottom:0;
+  position:fixed;right:0;top:var(--hdr-h);bottom:0;
   width:var(--ann-w);
   background:var(--ann-bg);
   border-left:1px solid var(--ann-border);
@@ -468,51 +536,42 @@ a{color:inherit;text-decoration:none}
   display:flex;align-items:center;
   padding:12px 16px;
   border-bottom:1px solid var(--ann-border);
-  flex-shrink:0;
-  gap:8px;
+  flex-shrink:0;gap:8px;
 }
 .ann-panel-label{
   display:flex;align-items:center;gap:6px;
-  font-size:12.5px;font-weight:600;
-  color:var(--text);
+  font-size:12.5px;font-weight:600;color:var(--text);
 }
 .ann-panel-dot{
   width:6px;height:6px;border-radius:50%;
   background:var(--ann-active-bdr);flex-shrink:0;
 }
-.ann-panel-close{
-  margin-left:auto;
+.ann-panel-actions{display:flex;gap:4px;margin-left:auto}
+.ann-panel-btn{
   width:28px;height:28px;
   display:flex;align-items:center;justify-content:center;
-  border-radius:5px;color:var(--text-3);font-size:14px;
+  border-radius:5px;color:var(--text-3);
   transition:background .15s,color .15s;
 }
-.ann-panel-close:hover{background:var(--border-2);color:var(--text)}
+.ann-panel-btn:hover{background:var(--border-2);color:var(--text)}
+.ann-panel-btn.bookmarked{color:#f59e0b}
 
-.ann-panel-scroll{
-  overflow-y:auto;flex:1;
-}
+.ann-panel-scroll{overflow-y:auto;flex:1}
 .ann-panel-scroll::-webkit-scrollbar{width:4px}
 .ann-panel-scroll::-webkit-scrollbar-track{background:transparent}
 .ann-panel-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 
-/* Annotation sections */
-.ann-sec{
-  padding:16px 18px;
-  border-bottom:1px solid var(--ann-border);
-}
+.ann-sec{padding:16px 18px;border-bottom:1px solid var(--ann-border)}
 .ann-sec:last-child{border-bottom:none}
 .ann-sec-label{
   display:flex;align-items:center;gap:5px;
   font-size:10px;font-weight:600;
   letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-3);
-  margin-bottom:9px;
+  color:var(--text-3);margin-bottom:9px;
 }
 .ann-sec-label svg{opacity:.7}
 .ann-sec-text{
-  font-size:13px;color:var(--text-2);
-  line-height:1.9;
+  font-size:13px;color:var(--text-2);line-height:1.9;
   font-family:'Inter','Noto Sans SC',sans-serif;
 }
 
@@ -524,10 +583,8 @@ a{color:inherit;text-decoration:none}
 }
 .nav-btn{
   display:flex;flex-direction:column;justify-content:center;
-  padding:10px 14px;
-  background:var(--bg-2);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
+  padding:10px 14px;background:var(--bg-2);
+  border:1px solid var(--border);border-radius:var(--radius);
   color:var(--text-2);font-size:12.5px;
   transition:all .18s;max-width:46%;text-align:left;line-height:1.5;
 }
@@ -541,21 +598,15 @@ a{color:inherit;text-decoration:none}
 
 /* ── Card mode overlay ───────────────────────────────── */
 .card-overlay{
-  position:fixed;inset:0;
-  background:var(--bg);
-  z-index:500;
-  display:flex;flex-direction:column;
-  transform:translateY(100%);
-  transition:transform .3s var(--ease);
+  position:fixed;inset:0;background:var(--bg);
+  z-index:500;display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .3s var(--ease);
 }
 .card-overlay.open{transform:translateY(0)}
-
 .card-hdr{
-  height:var(--hdr-h);
-  display:flex;align-items:center;
+  height:var(--hdr-h);display:flex;align-items:center;
   padding:0 16px;gap:12px;
-  border-bottom:1px solid var(--border);
-  flex-shrink:0;
+  border-bottom:1px solid var(--border);flex-shrink:0;
 }
 .card-back{
   display:flex;align-items:center;gap:6px;
@@ -565,77 +616,53 @@ a{color:inherit;text-decoration:none}
 }
 .card-back:hover{background:var(--bg-2);color:var(--text)}
 .card-hdr-title{font-size:13.5px;font-weight:600;color:var(--text);flex:1}
-.card-prog{
-  font-size:12px;color:var(--text-3);
-  font-variant-numeric:tabular-nums;
-}
+.card-prog{font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums}
 
 .card-body{
   flex:1;overflow-y:auto;
   display:flex;align-items:flex-start;justify-content:center;
   padding:32px 20px 40px;
 }
-.card-inner{
-  width:100%;max-width:680px;
-  display:flex;flex-direction:column;gap:16px;
-}
+.card-inner{width:100%;max-width:680px;display:flex;flex-direction:column;gap:16px}
 
 .card-type-badge{
   display:inline-flex;align-items:center;
-  font-size:11px;font-weight:600;
-  letter-spacing:.08em;
-  color:var(--acc,#2563eb);
-  background:rgba(37,99,235,.08);
-  padding:3px 10px;border-radius:20px;
-  align-self:flex-start;
+  font-size:11px;font-weight:600;letter-spacing:.08em;
+  color:var(--acc,#2563eb);background:rgba(37,99,235,.08);
+  padding:3px 10px;border-radius:20px;align-self:flex-start;
 }
 .card-scene{
-  background:var(--bg-2);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:16px 20px;
-  font-size:14px;color:var(--text-2);
-  line-height:1.85;
+  background:var(--bg-2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px 20px;
+  font-size:14px;color:var(--text-2);line-height:1.85;
 }
 .card-scene-label{
-  font-size:10px;font-weight:600;
-  letter-spacing:.1em;text-transform:uppercase;
+  font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
   color:var(--text-3);margin-bottom:8px;
 }
 .card-question{
-  font-size:16px;font-weight:600;
-  color:var(--text);line-height:1.6;
-  font-family:'Inter','Noto Serif SC',sans-serif;
-  padding:4px 0;
+  font-size:16px;font-weight:600;color:var(--text);line-height:1.6;
+  font-family:'Inter','Noto Serif SC',sans-serif;padding:4px 0;
 }
-
 .card-answer-wrap{
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  overflow:hidden;
+  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
 }
 .card-answer-placeholder{
   display:flex;flex-direction:column;align-items:center;
-  padding:32px 20px;gap:12px;
-  cursor:pointer;
-  transition:background .15s;
+  padding:32px 20px;gap:12px;cursor:pointer;transition:background .15s;
 }
 .card-answer-placeholder:hover{background:var(--bg-2)}
 .card-show-btn{
   display:inline-flex;align-items:center;gap:8px;
   background:var(--text);color:var(--bg);
   padding:10px 24px;border-radius:7px;
-  font-size:13.5px;font-weight:500;
-  transition:opacity .15s;
+  font-size:13.5px;font-weight:500;transition:opacity .15s;
 }
 .card-show-btn:hover{opacity:.85}
 .card-show-hint{font-size:12px;color:var(--text-3)}
-
 .card-answer{
-  display:none;
-  padding:20px;
-  font-size:13.5px;color:var(--text-2);
-  line-height:1.9;
+  display:none;padding:20px;
+  font-size:13.5px;color:var(--text-2);line-height:1.9;
   font-family:'Inter','Noto Sans SC',sans-serif;
 }
 .card-answer.revealed{display:block}
@@ -643,47 +670,48 @@ a{color:inherit;text-decoration:none}
 
 .card-footer{
   display:flex;justify-content:space-between;align-items:center;
-  padding:16px 20px;
-  border-top:1px solid var(--border);
-  flex-shrink:0;
+  padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0;
 }
 .card-nav-btn{
   display:flex;align-items:center;gap:6px;
   padding:8px 16px;border-radius:7px;
   font-size:13px;color:var(--text-2);
-  border:1px solid var(--border);
-  background:var(--bg);
+  border:1px solid var(--border);background:var(--bg);
   transition:all .15s;
 }
 .card-nav-btn:hover:not(:disabled){
   background:var(--text);color:var(--bg);border-color:var(--text);
 }
 .card-nav-btn:disabled{opacity:.3;cursor:not-allowed}
-.card-dots{
-  display:flex;gap:6px;
-}
+.card-dots{display:flex;gap:6px}
 .card-dot{
   width:6px;height:6px;border-radius:50%;
-  background:var(--border);
-  transition:background .15s,transform .15s;
+  background:var(--border);transition:background .15s,transform .15s;
 }
 .card-dot.active{background:var(--ann-active-bdr);transform:scale(1.3)}
 
-/* Cards available tip */
 .cards-tip{
   display:inline-flex;align-items:center;gap:8px;
-  padding:8px 14px;
-  background:var(--bg-2);
-  border:1px solid var(--border);
-  border-radius:6px;
+  padding:8px 14px;background:var(--bg-2);
+  border:1px solid var(--border);border-radius:6px;
   font-size:12px;color:var(--text-3);
   font-family:'Inter','Noto Sans SC',sans-serif;
-  cursor:pointer;
-  transition:border-color .15s,background .15s;
-  margin-bottom:1.6em;
+  cursor:pointer;transition:border-color .15s,background .15s;
+  margin-bottom:1em;
 }
 .cards-tip:hover{border-color:var(--ann-active-bdr);background:var(--ann-active-bg);color:var(--text)}
-.cards-tip-icon{font-size:14px}
+
+/* Share toast */
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--text);color:var(--bg);
+  padding:10px 20px;border-radius:8px;
+  font-size:13px;font-weight:500;
+  box-shadow:var(--shadow-md);
+  transition:transform .3s var(--ease),opacity .3s;
+  opacity:0;z-index:600;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
 /* ── Responsive ─────────────────────────────────────── */
 @media(max-width:900px){
@@ -708,7 +736,7 @@ a{color:inherit;text-decoration:none}
 
 <!-- Header -->
 <header class="hdr" id="hdr">
-  <button class="hdr-sb-btn" id="sbToggle" onclick="toggleSidebar()" title="切换侧栏">
+  <button class="hdr-sb-btn" onclick="toggleSidebar()" title="切换侧栏">
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <rect x="1" y="3" width="14" height="1.5" rx=".75"/>
       <rect x="1" y="7.25" width="14" height="1.5" rx=".75"/>
@@ -726,7 +754,15 @@ a{color:inherit;text-decoration:none}
       <button onclick="chFont(0)"  title="重置">A</button>
       <button onclick="chFont(1)"  title="放大">A+</button>
     </div>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">暗色</button>
+    <div style="position:relative">
+      <button class="hdr-btn" id="fontBtn" onclick="toggleFontPicker()">字体</button>
+      <div class="font-picker" id="fontPicker">
+        <button class="font-pick-item active" data-font="'Noto Serif SC','SimSun','宋体',Georgia,serif" onclick="pickFont(this)">宋体（默认）</button>
+        <button class="font-pick-item" data-font="'Noto Sans SC','PingFang SC','Hiragino Sans GB',system-ui,sans-serif" onclick="pickFont(this)">黑体</button>
+        <button class="font-pick-item" data-font="'ZCOOL XiaoWei','KaiTi','楷体',serif" onclick="pickFont(this)">楷体</button>
+      </div>
+    </div>
+    <button class="hdr-btn" id="themeBtn" onclick="toggleTheme()">暗色</button>
   </div>
 </header>
 
@@ -736,14 +772,36 @@ a{color:inherit;text-decoration:none}
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
   <div class="sb-search">
-    <input class="sb-input" id="searchBox" type="text" placeholder="搜索篇目…" autocomplete="off">
+    <input class="sb-input" id="searchBox" type="text" placeholder="搜索篇目或全文内容…" autocomplete="off">
+  </div>
+  <div class="sb-tabs">
+    <div class="sb-tab active" data-panel="tocPanel" onclick="switchTab(this)">目录</div>
+    <div class="sb-tab" data-panel="bmPanel" onclick="switchTab(this)">书签</div>
+    <div class="sb-tab" data-panel="statsPanel" onclick="switchTab(this)">统计</div>
   </div>
   <div class="sb-stat">
     <span id="statText">加载中…</span>
     <div class="sb-prog"><div class="sb-prog-fill" id="statFill"></div></div>
   </div>
-  <div class="sb-toc" id="toc">
-    <div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">目录加载中…</div>
+
+  <!-- TOC panel -->
+  <div class="sb-panel active" id="tocPanel">
+    <div class="sb-toc" id="toc">
+      <div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">目录加载中…</div>
+    </div>
+    <div class="search-results" id="searchResults" style="display:none"></div>
+  </div>
+
+  <!-- Bookmarks panel -->
+  <div class="sb-panel" id="bmPanel">
+    <div class="sb-bookmarks" id="bmList">
+      <div class="bm-empty">还没有书签<br>阅读时点击注解面板的书签按钮收藏段落</div>
+    </div>
+  </div>
+
+  <!-- Stats panel -->
+  <div class="sb-panel" id="statsPanel">
+    <div class="sb-stats" id="statsContent"></div>
   </div>
 </aside>
 
@@ -790,14 +848,25 @@ a{color:inherit;text-decoration:none}
       <span class="ann-panel-dot"></span>
       段落注解
     </div>
-    <button class="ann-panel-close" onclick="closeAnnPanel()" title="关闭">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
-        <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </button>
+    <div class="ann-panel-actions">
+      <button class="ann-panel-btn" id="bmBtn" onclick="toggleBookmark()" title="收藏此段">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 1.5h8v11L7 9.5 3 12.5z"/></svg>
+      </button>
+      <button class="ann-panel-btn" onclick="shareAnnotation()" title="分享">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M5 4L9 2M5 10l4 2M9 2a2 2 0 100-4 2 2 0 000 4zM5 7a2 2 0 100 4 2 2 0 000-4zM9 12a2 2 0 100 4 2 2 0 000-4z" transform="translate(0,1) scale(.85)"/></svg>
+      </button>
+      <button class="ann-panel-btn" onclick="closeAnnPanel()" title="关闭">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
   </div>
   <div class="ann-panel-scroll" id="annPanelBody"></div>
 </aside>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <script>
@@ -807,20 +876,26 @@ let volCache  = {};
 let flatList  = [];
 let curId     = null;
 let curAnnotations = null;
+let curAnnMatch    = null;
 let fontSize  = +localStorage.getItem('fz') || 15;
 let readSet   = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
+let bookmarks = JSON.parse(localStorage.getItem('bm') || '[]');
+let scrollPos = JSON.parse(localStorage.getItem('sp') || '{}');
 let searchVer = 0;
 let sbOpen    = true;
 let cardIds   = new Set();
+let annIds    = new Set();
 let curCards  = [];
 let curCardIdx = 0;
+let searchTimer = null;
 
 // ── Boot ───────────────────────────────────────────────
 applyTheme(localStorage.getItem('theme') || 'light');
 setFontSize(fontSize);
+const savedFont = localStorage.getItem('ff');
+if (savedFont) document.documentElement.style.setProperty('--font-reading', savedFont);
 marked.setOptions({ breaks: true, gfm: true });
 
-// Restore sidebar state
 if (localStorage.getItem('sb') === '0') {
   sbOpen = false;
   document.getElementById('sidebar').classList.add('collapsed');
@@ -830,16 +905,20 @@ if (localStorage.getItem('sb') === '0') {
 // ── Init ───────────────────────────────────────────────
 async function init() {
   try {
-    const [tocRes, artsRes, cardsListRes] = await Promise.all([
+    const [tocRes, artsRes, metaRes] = await Promise.all([
       fetch('/api/toc'),
       fetch('/api/articles'),
-      fetch('/api/cards/list')
+      fetch('/api/meta')
     ]);
     toc      = await tocRes.json();
     flatList = await artsRes.json();
-    cardIds  = new Set(await cardsListRes.json());
+    const meta = await metaRes.json();
+    annIds   = new Set(meta.annIds);
+    cardIds  = new Set(meta.cardIds);
     renderToc();
     updateStat();
+    renderBookmarks();
+    renderStats();
     const last = +localStorage.getItem('last');
     if (last && flatList.some(a => a.id === last)) loadArt(last, false);
   } catch(e) {
@@ -853,7 +932,6 @@ function toggleSidebar() {
   sbOpen = !sbOpen;
   document.getElementById('sidebar').classList.toggle('collapsed', !sbOpen);
   document.getElementById('main').classList.toggle('sb-off', !sbOpen);
-  // on mobile, use open class
   document.getElementById('sidebar').classList.toggle('open', sbOpen && window.innerWidth <= 768);
   document.getElementById('overlay').classList.toggle('on', sbOpen && window.innerWidth <= 768);
   localStorage.setItem('sb', sbOpen ? '1' : '0');
@@ -866,8 +944,19 @@ function closeSidebar() {
   }
 }
 
+// ── Sidebar tabs ───────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sb-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById(tab.dataset.panel).classList.add('active');
+  if (tab.dataset.panel === 'statsPanel') renderStats();
+  if (tab.dataset.panel === 'bmPanel') renderBookmarks();
+}
+
 // ── Right annotation panel ─────────────────────────────
 function showAnnPanel(ann) {
+  curAnnMatch = ann.match;
   let html = '';
 
   if (ann.note) {
@@ -900,26 +989,190 @@ function showAnnPanel(ann) {
 
   document.getElementById('annPanelBody').innerHTML = html;
   document.getElementById('annPanel').classList.add('open');
+
+  const isBm = bookmarks.some(b => b.artId === curId && b.match === ann.match);
+  document.getElementById('bmBtn').classList.toggle('bookmarked', isBm);
 }
 
 function closeAnnPanel() {
   document.getElementById('annPanel').classList.remove('open');
+  curAnnMatch = null;
   document.querySelectorAll('.para-block.has-ann.active')
     .forEach(el => el.classList.remove('active'));
 }
 
-// ── Render TOC skeleton ────────────────────────────────
+// ── Bookmarks ──────────────────────────────────────────
+function toggleBookmark() {
+  if (!curId || !curAnnMatch) return;
+  const idx = bookmarks.findIndex(b => b.artId === curId && b.match === curAnnMatch);
+  if (idx >= 0) {
+    bookmarks.splice(idx, 1);
+    document.getElementById('bmBtn').classList.remove('bookmarked');
+    showToast('已取消收藏');
+  } else {
+    const title = flatList.find(a => a.id === curId)?.title || '';
+    bookmarks.unshift({ artId: curId, match: curAnnMatch, title, ts: Date.now() });
+    document.getElementById('bmBtn').classList.add('bookmarked');
+    showToast('已收藏段落');
+  }
+  localStorage.setItem('bm', JSON.stringify(bookmarks));
+  renderBookmarks();
+  updateBookmarkIndicators();
+}
+
+function renderBookmarks() {
+  const el = document.getElementById('bmList');
+  if (!bookmarks.length) {
+    el.innerHTML = '<div class="bm-empty">还没有书签<br>阅读时点击注解面板的书签按钮收藏段落</div>';
+    return;
+  }
+  el.innerHTML = bookmarks.map((b, i) => `
+    <div class="bm-item" onclick="loadArt(${b.artId})">
+      <div style="flex:1">
+        <div class="bm-item-text">${escHtml(b.match)}</div>
+        <div class="bm-item-title">${escHtml(b.title)}</div>
+      </div>
+      <button class="bm-item-del" onclick="event.stopPropagation();removeBm(${i})" title="删除">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeBm(idx) {
+  bookmarks.splice(idx, 1);
+  localStorage.setItem('bm', JSON.stringify(bookmarks));
+  renderBookmarks();
+  updateBookmarkIndicators();
+}
+
+function updateBookmarkIndicators() {
+  document.querySelectorAll('.para-block.bookmarked').forEach(el => el.classList.remove('bookmarked'));
+  if (!curId) return;
+  const artBms = bookmarks.filter(b => b.artId === curId);
+  document.querySelectorAll('.para-block.has-ann').forEach(el => {
+    const p = el.querySelector('p');
+    if (!p) return;
+    const txt = p.textContent.trim();
+    if (artBms.some(b => txt.startsWith(b.match))) {
+      el.classList.add('bookmarked');
+    }
+  });
+}
+
+// ── Reading stats ──────────────────────────────────────
+function renderStats() {
+  const total = flatList.length;
+  const read = readSet.size;
+  const pct = total ? Math.round(read / total * 100) : 0;
+  const annCount = annIds.size;
+  const cardCount = cardIds.size;
+  const bmCount = bookmarks.length;
+
+  let volStats = '';
+  toc.forEach((vol, vi) => {
+    const fv = volCache[vi];
+    const arts = fv ? getVolArts(fv) : [];
+    const volTotal = vol.count || arts.length;
+    const volRead = arts.filter(a => readSet.has(a.id)).length;
+    const vPct = volTotal ? Math.round(volRead / volTotal * 100) : 0;
+    volStats += `
+      <div class="stats-vol-row">
+        <span class="stats-vol-name">第${vi+1}卷</span>
+        <div class="stats-vol-bar"><div class="stats-vol-bar-fill" style="width:${vPct}%"></div></div>
+        <span class="stats-vol-pct">${vPct}%</span>
+      </div>`;
+  });
+
+  document.getElementById('statsContent').innerHTML = `
+    <div class="stats-card">
+      <div class="stats-label">阅读进度</div>
+      <div class="stats-val">${read} <span style="font-size:12px;font-weight:400;color:var(--sb-text-3)">/ ${total} 篇</span></div>
+      <div class="stats-bar"><div class="stats-bar-fill" style="width:${pct}%;background:var(--prog)"></div></div>
+    </div>
+    <div class="stats-card">
+      <div class="stats-label">各卷进度</div>
+      ${volStats}
+    </div>
+    <div class="stats-card" style="display:flex;gap:12px">
+      <div style="flex:1">
+        <div class="stats-label">有注解</div>
+        <div class="stats-val" style="font-size:15px">${annCount}</div>
+      </div>
+      <div style="flex:1">
+        <div class="stats-label">有闪卡</div>
+        <div class="stats-val" style="font-size:15px">${cardCount}</div>
+      </div>
+      <div style="flex:1">
+        <div class="stats-label">已收藏</div>
+        <div class="stats-val" style="font-size:15px">${bmCount}</div>
+      </div>
+    </div>
+  `;
+}
+
+// ── Share ───────────────────────────────────────────────
+function shareAnnotation() {
+  if (!curId || !curAnnMatch) return;
+  const url = location.origin + '/?id=' + curId + '&p=' + encodeURIComponent(curAnnMatch);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+  } else {
+    showToast('浏览器不支持复制');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ── Font picker ────────────────────────────────────────
+function toggleFontPicker() {
+  document.getElementById('fontPicker').classList.toggle('open');
+}
+
+function pickFont(btn) {
+  const font = btn.dataset.font;
+  document.documentElement.style.setProperty('--font-reading', font);
+  localStorage.setItem('ff', font);
+  document.querySelectorAll('.font-pick-item').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('fontPicker').classList.remove('open');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#fontBtn') && !e.target.closest('#fontPicker'))
+    document.getElementById('fontPicker').classList.remove('open');
+});
+
+// Restore saved font selection UI
+if (savedFont) {
+  document.querySelectorAll('.font-pick-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.font === savedFont);
+  });
+}
+
+// ── Render TOC ─────────────────────────────────────────
 function renderToc(filter = '') {
   const q = filter.trim();
-  if (q) { renderTocSearch(q); return; }
-
   const tocEl = document.getElementById('toc');
-  let html = '';
+  const searchEl = document.getElementById('searchResults');
 
+  if (q && q.length >= 2) {
+    tocEl.style.display = 'none';
+    searchEl.style.display = 'block';
+    doSearch(q);
+    return;
+  }
+
+  tocEl.style.display = 'block';
+  searchEl.style.display = 'none';
+
+  let html = '';
   toc.forEach((vol, vi) => {
     const isCurVol = volCache[vi] && getVolArts(volCache[vi]).some(a => a.id === curId);
-    const isOpen   = (vi === 0) || isCurVol;
-
+    const isOpen = (vi === 0) || isCurVol;
     html += `<div class="vol-item${isOpen ? ' open' : ''}" data-vi="${vi}">
       <div class="vol-hdr" onclick="toggleVol(${vi})">
         <span class="vol-arrow">▶</span>
@@ -930,27 +1183,58 @@ function renderToc(filter = '') {
     </div>`;
   });
 
-  tocEl.innerHTML = html ||
-    '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">无匹配</div>';
-
+  tocEl.innerHTML = html || '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">无匹配</div>';
   toc.forEach((_, vi) => {
     if (document.querySelector(`.vol-item[data-vi="${vi}"]`)?.classList.contains('open'))
       loadVolume(vi);
   });
 }
 
+// ── Full-text search ───────────────────────────────────
+async function doSearch(q) {
+  const ver = ++searchVer;
+  const el = document.getElementById('searchResults');
+  el.innerHTML = '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">搜索中…</div>';
+
+  try {
+    const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+    if (ver !== searchVer) return;
+    const results = await res.json();
+
+    if (!results.length) {
+      el.innerHTML = '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">无匹配结果</div>';
+      return;
+    }
+
+    const ql = q.toLowerCase();
+    el.innerHTML = results.map(r => {
+      let snip = r.snippet || '';
+      if (snip) {
+        const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+        snip = escHtml(snip).replace(re, '<mark>$1</mark>');
+      }
+      return `<div class="search-result" onclick="loadArt(${r.id})">
+        <div class="search-result-title">${escHtml(r.title)}</div>
+        ${snip ? `<div class="search-result-snippet">${snip}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    if (ver === searchVer) {
+      el.innerHTML = '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">搜索失败</div>';
+    }
+  }
+}
+
 async function loadVolume(vi) {
   if (volCache[vi]) { renderVolBody(vi); return; }
   const body = document.getElementById('volBody' + vi);
-  if (body) body.innerHTML =
-    '<div style="padding:6px 28px;color:var(--sb-text-3);font-size:11px">加载中…</div>';
+  if (body) body.innerHTML = '<div style="padding:6px 28px;color:var(--sb-text-3);font-size:11px">加载中…</div>';
   try {
     const res = await fetch(`/api/toc/volume?vi=${vi}`);
     volCache[vi] = await res.json();
     renderVolBody(vi);
   } catch(e) {
-    if (body) body.innerHTML =
-      '<div style="padding:6px 28px;color:var(--sb-text-3);font-size:11px">加载失败</div>';
+    if (body) body.innerHTML = '<div style="padding:6px 28px;color:var(--sb-text-3);font-size:11px">加载失败</div>';
   }
 }
 
@@ -972,59 +1256,6 @@ function renderVolBody(vi) {
   body.innerHTML = html;
 }
 
-async function renderTocSearch(q) {
-  const ver = ++searchVer;
-  const tocEl = document.getElementById('toc');
-  tocEl.innerHTML =
-    '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">搜索中…</div>';
-
-  await Promise.all(toc.map((_, vi) => loadVolume(vi)));
-  if (ver !== searchVer) return;
-
-  let html = '';
-  toc.forEach((vol, vi) => {
-    const fv = volCache[vi];
-    if (!fv) return;
-    const matched = [];
-    (fv.sections || []).forEach(sec =>
-      (sec.articles || []).forEach(a => {
-        if (a.title.includes(q) || vol.name.includes(q) || sec.name.includes(q))
-          matched.push({ ...a, _sec: sec.name });
-      })
-    );
-    (fv.articles || []).forEach(a => {
-      if (a.title.includes(q) || vol.name.includes(q)) matched.push(a);
-    });
-    if (!matched.length) return;
-
-    html += `<div class="vol-item open" data-vi="${vi}">
-      <div class="vol-hdr" onclick="toggleVol(${vi})">
-        <span class="vol-arrow">▶</span>
-        <span class="vol-num">${vi+1}</span>
-        <span class="vol-title">${vol.name}</span>
-      </div>
-      <div class="vol-body" id="volBody${vi}">`;
-
-    if (fv.sections?.length) {
-      const bySec = {};
-      matched.filter(a => a._sec).forEach(a => {
-        (bySec[a._sec] = bySec[a._sec] || []).push(a);
-      });
-      Object.entries(bySec).forEach(([s, arts]) => {
-        html += `<div class="sec-hdr">${s}</div>`;
-        arts.forEach(a => { html += artLink(a); });
-      });
-      matched.filter(a => !a._sec).forEach(a => { html += artLink(a); });
-    } else {
-      matched.forEach(a => { html += artLink(a); });
-    }
-    html += `</div></div>`;
-  });
-
-  tocEl.innerHTML = html ||
-    '<div style="padding:20px 12px;color:var(--sb-text-3);font-size:12px">无匹配</div>';
-}
-
 function getVolArts(vol) {
   const arts = [];
   (vol.sections || []).forEach(s => arts.push(...(s.articles || [])));
@@ -1033,11 +1264,15 @@ function getVolArts(vol) {
 }
 
 function artLink(a) {
-  const active = a.id === curId   ? ' active' : '';
-  const read   = readSet.has(a.id) ? ' read'   : '';
+  const active = a.id === curId ? ' active' : '';
+  const read = readSet.has(a.id) ? ' read' : '';
+  let badges = '';
+  if (annIds.has(a.id)) badges += '<span class="art-badge ann">注</span>';
+  if (cardIds.has(a.id)) badges += '<span class="art-badge card">卡</span>';
   return `<div class="art-lnk${active}${read}" id="al${a.id}" onclick="loadArt(${a.id})">
     <span class="art-n">${a.id}</span>
     <span style="flex:1">${a.title}</span>
+    ${badges ? '<div class="art-badges">' + badges + '</div>' : ''}
     <span class="art-check">✓</span>
   </div>`;
 }
@@ -1051,14 +1286,34 @@ async function toggleVol(vi) {
 }
 
 document.getElementById('searchBox').addEventListener('input', function() {
-  renderToc(this.value);
+  clearTimeout(searchTimer);
+  const q = this.value;
+  searchTimer = setTimeout(() => renderToc(q), 300);
 });
+
+// ── Scroll position memory ─────────────────────────────
+function saveScrollPos() {
+  if (!curId) return;
+  const main = document.getElementById('main');
+  scrollPos[curId] = main.scrollTop;
+  localStorage.setItem('sp', JSON.stringify(scrollPos));
+}
+
+document.getElementById('main').addEventListener('scroll', function() {
+  const max = this.scrollHeight - this.clientHeight;
+  const pct = max > 0 ? this.scrollTop / max * 100 : 0;
+  document.getElementById('readFill').style.width = pct + '%';
+});
+
+setInterval(saveScrollPos, 3000);
 
 // ── Load article ───────────────────────────────────────
 async function loadArt(id, scrollTop = true) {
+  saveScrollPos();
   if (id === curId) { closeSidebar(); return; }
   curId = id;
   curAnnotations = null;
+  curAnnMatch = null;
   closeAnnPanel();
   closeCards();
   localStorage.setItem('last', id);
@@ -1101,7 +1356,7 @@ async function loadArt(id, scrollTop = true) {
       fetch('/api/article?id=' + id),
       fetch('/api/annotations?id=' + id)
     ]);
-    const d       = await artRes.json();
+    const d = await artRes.json();
     const annData = await annRes.json();
     curAnnotations = annData;
     renderArticle(d.content, id, annData);
@@ -1110,6 +1365,15 @@ async function loadArt(id, scrollTop = true) {
     updateStat();
     const al = document.getElementById('al' + id);
     if (al) al.classList.add('read');
+    updateBookmarkIndicators();
+
+    if (scrollTop && scrollPos[id]) {
+      setTimeout(() => {
+        document.getElementById('main').scrollTo({ top: scrollPos[id], behavior: 'smooth' });
+      }, 100);
+    }
+
+    checkUrlParams();
   } catch(e) {
     wrap.innerHTML = '<div class="loading" style="color:var(--text-3)">加载失败</div>';
   }
@@ -1117,24 +1381,24 @@ async function loadArt(id, scrollTop = true) {
 
 // ── Render article ─────────────────────────────────────
 function renderArticle(md, id, annData) {
-  const parts  = md.split(/\n---+\n/);
+  const parts = md.split(/\n---+\n/);
   let bodyHtml = marked.parse(parts[0]);
   if (parts.slice(1).join('\n').trim())
     bodyHtml += `<div class="prose-fn">${marked.parse(parts.slice(1).join('\n'))}</div>`;
 
   bodyHtml = injectAnnotations(bodyHtml, annData);
 
-  const idx  = flatList.findIndex(a => a.id === id);
+  const idx = flatList.findIndex(a => a.id === id);
   const prev = idx > 0 ? flatList[idx - 1] : null;
   const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
 
-  const metaHtml  = annData?.meta ? buildMetaPanel(annData.meta) : '';
-  const tipHtml   = annData?.paragraphs?.length
-    ? `<div class="ann-tip">点击段落可在右侧查看注解 · 历史背景 · 小故事</div>`
+  const metaHtml = annData?.meta ? buildMetaPanel(annData.meta) : '';
+  const tipHtml = annData?.paragraphs?.length
+    ? '<div class="ann-tip">点击段落可在右侧查看注解 · 历史背景 · 小故事</div>'
     : '';
   const cardsTipHtml = cardIds.has(id)
     ? `<div class="cards-tip" onclick="openCards(${id})">
-        <span class="cards-tip-icon">🃏</span>
+        <span style="font-size:14px">🃏</span>
         <span>本篇有情景分析练习，点击开始</span>
       </div>`
     : '';
@@ -1159,11 +1423,11 @@ function renderArticle(md, id, annData) {
   document.title = (h1 ? h1.textContent : '文章') + ' — 读毛选';
 }
 
-// ── Inject paragraph affordance (no inline card) ───────
+// ── Inject paragraph affordance ────────────────────────
 function injectAnnotations(html, annData) {
   if (!annData?.paragraphs?.length) return html;
-  const parser    = new DOMParser();
-  const doc       = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
   const container = doc.body.firstChild;
 
   container.querySelectorAll('p').forEach(p => {
@@ -1174,28 +1438,23 @@ function injectAnnotations(html, annData) {
     wrapper.className = 'para-block has-ann';
     p.parentNode.insertBefore(wrapper, p);
     wrapper.appendChild(p);
-    // annotation shown in right panel via delegated handler below
   });
 
   return container.innerHTML;
 }
 
-// Delegated handler — survives innerHTML replacement
+// Delegated click handler
 document.getElementById('artWrap').addEventListener('click', e => {
   const p = e.target.closest('p');
   if (!p) return;
   const wrapper = p.parentElement;
   if (!wrapper?.classList.contains('has-ann')) return;
-
   const txt = p.textContent.trim();
   const ann = curAnnotations?.paragraphs?.find(a => txt.startsWith(a.match));
   if (!ann) return;
-
-  // Highlight active paragraph
   document.querySelectorAll('.para-block.has-ann.active')
     .forEach(el => el.classList.remove('active'));
   wrapper.classList.add('active');
-
   showAnnPanel(ann);
 });
 
@@ -1203,7 +1462,7 @@ document.getElementById('artWrap').addEventListener('click', e => {
 async function openCards(id) {
   try {
     const res = await fetch('/api/cards?id=' + id);
-    curCards   = await res.json();
+    curCards = await res.json();
     curCardIdx = 0;
     if (!curCards.length) return;
     const title = flatList.find(a => a.id === id)?.title || '情景练习';
@@ -1218,9 +1477,9 @@ function closeCards() {
 }
 
 function renderCard() {
-  const card  = curCards[curCardIdx];
+  const card = curCards[curCardIdx];
   const total = curCards.length;
-  const idx   = curCardIdx;
+  const idx = curCardIdx;
 
   document.getElementById('cardProg').textContent = `${idx + 1} / ${total}`;
   document.getElementById('cardPrev').disabled = idx === 0;
@@ -1292,6 +1551,31 @@ function toggleMeta() {
   document.getElementById('artMetaPanel')?.classList.toggle('open');
 }
 
+// ── URL params (share links) ───────────────────────────
+function checkUrlParams() {
+  const params = new URLSearchParams(location.search);
+  const pid = +params.get('id');
+  const pmatch = params.get('p');
+  if (pid && pid === curId && pmatch && curAnnotations?.paragraphs) {
+    const ann = curAnnotations.paragraphs.find(a => a.match === pmatch);
+    if (ann) {
+      setTimeout(() => {
+        const blocks = document.querySelectorAll('.para-block.has-ann');
+        for (const block of blocks) {
+          const p = block.querySelector('p');
+          if (p && p.textContent.trim().startsWith(pmatch)) {
+            block.classList.add('active');
+            p.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            showAnnPanel(ann);
+            break;
+          }
+        }
+      }, 200);
+    }
+    history.replaceState(null, '', '/');
+  }
+}
+
 // ── Utilities ──────────────────────────────────────────
 function escHtml(s) {
   return (s || '')
@@ -1304,12 +1588,6 @@ function updateStat() {
   document.getElementById('statText').textContent = `已读 ${r} / ${t}`;
   document.getElementById('statFill').style.width = t ? (r/t*100)+'%' : '0%';
 }
-
-document.getElementById('main').addEventListener('scroll', function() {
-  const max = this.scrollHeight - this.clientHeight;
-  const pct = max > 0 ? this.scrollTop / max * 100 : 0;
-  document.getElementById('readFill').style.width = pct + '%';
-});
 
 function chFont(d) {
   if (d === 0) fontSize = 15;
@@ -1335,9 +1613,18 @@ function applyTheme(t) {
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT' || !curId) return;
   const idx = flatList.findIndex(a => a.id === curId);
-  if (e.key === 'ArrowLeft'  && idx > 0)                   loadArt(flatList[idx-1].id);
+  if (e.key === 'ArrowLeft' && idx > 0) loadArt(flatList[idx-1].id);
   if (e.key === 'ArrowRight' && idx < flatList.length - 1) loadArt(flatList[idx+1].id);
   if (e.key === 'Escape') { closeAnnPanel(); closeCards(); }
+});
+
+// Handle initial URL params
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  const pid = +params.get('id');
+  if (pid && flatList.some(a => a.id === pid)) {
+    loadArt(pid);
+  }
 });
 
 // ── Start ──────────────────────────────────────────────
