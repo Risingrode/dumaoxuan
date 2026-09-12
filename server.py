@@ -5,7 +5,7 @@ import json
 import re
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from annotations import get_annotation, ANNOTATIONS
+from annotations import get_annotation, ANNOTATIONS, get_cards, get_all_card_ids
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONTENT_DIR = os.path.join(BASE_DIR, 'MaoZeDongAnthology')
@@ -142,8 +142,18 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 self._json(ann)
         elif path == '/api/annotations/list':
-            # Return list of article IDs that have annotations
             self._json(list(ANNOTATIONS.keys()))
+        elif path == '/api/cards':
+            qs = parse_qs(parsed.query)
+            try:
+                aid = int(qs['id'][0])
+            except (KeyError, ValueError, IndexError):
+                self.send_error(400, 'Bad Request')
+                return
+            cards = get_cards(aid)
+            self._json(cards or [])
+        elif path == '/api/cards/list':
+            self._json(get_all_card_ids())
         else:
             self.send_error(404)
 

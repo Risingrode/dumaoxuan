@@ -539,6 +539,152 @@ a{color:inherit;text-decoration:none}
 .nav-lbl{font-size:10px;opacity:.6;display:block;margin-bottom:2px}
 .nav-ttl{font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
 
+/* ── Card mode overlay ───────────────────────────────── */
+.card-overlay{
+  position:fixed;inset:0;
+  background:var(--bg);
+  z-index:500;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .3s var(--ease);
+}
+.card-overlay.open{transform:translateY(0)}
+
+.card-hdr{
+  height:var(--hdr-h);
+  display:flex;align-items:center;
+  padding:0 16px;gap:12px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.card-back{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--text-2);
+  padding:6px 10px;border-radius:6px;
+  transition:background .15s,color .15s;
+}
+.card-back:hover{background:var(--bg-2);color:var(--text)}
+.card-hdr-title{font-size:13.5px;font-weight:600;color:var(--text);flex:1}
+.card-prog{
+  font-size:12px;color:var(--text-3);
+  font-variant-numeric:tabular-nums;
+}
+
+.card-body{
+  flex:1;overflow-y:auto;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:32px 20px 40px;
+}
+.card-inner{
+  width:100%;max-width:680px;
+  display:flex;flex-direction:column;gap:16px;
+}
+
+.card-type-badge{
+  display:inline-flex;align-items:center;
+  font-size:11px;font-weight:600;
+  letter-spacing:.08em;
+  color:var(--acc,#2563eb);
+  background:rgba(37,99,235,.08);
+  padding:3px 10px;border-radius:20px;
+  align-self:flex-start;
+}
+.card-scene{
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  font-size:14px;color:var(--text-2);
+  line-height:1.85;
+}
+.card-scene-label{
+  font-size:10px;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:8px;
+}
+.card-question{
+  font-size:16px;font-weight:600;
+  color:var(--text);line-height:1.6;
+  font-family:'Inter','Noto Serif SC',sans-serif;
+  padding:4px 0;
+}
+
+.card-answer-wrap{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.card-answer-placeholder{
+  display:flex;flex-direction:column;align-items:center;
+  padding:32px 20px;gap:12px;
+  cursor:pointer;
+  transition:background .15s;
+}
+.card-answer-placeholder:hover{background:var(--bg-2)}
+.card-show-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--text);color:var(--bg);
+  padding:10px 24px;border-radius:7px;
+  font-size:13.5px;font-weight:500;
+  transition:opacity .15s;
+}
+.card-show-btn:hover{opacity:.85}
+.card-show-hint{font-size:12px;color:var(--text-3)}
+
+.card-answer{
+  display:none;
+  padding:20px;
+  font-size:13.5px;color:var(--text-2);
+  line-height:1.9;
+  font-family:'Inter','Noto Sans SC',sans-serif;
+}
+.card-answer.revealed{display:block}
+.card-answer strong{color:var(--text);font-weight:600}
+
+.card-footer{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+}
+.card-nav-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:7px;
+  font-size:13px;color:var(--text-2);
+  border:1px solid var(--border);
+  background:var(--bg);
+  transition:all .15s;
+}
+.card-nav-btn:hover:not(:disabled){
+  background:var(--text);color:var(--bg);border-color:var(--text);
+}
+.card-nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.card-dots{
+  display:flex;gap:6px;
+}
+.card-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--border);
+  transition:background .15s,transform .15s;
+}
+.card-dot.active{background:var(--ann-active-bdr);transform:scale(1.3)}
+
+/* Cards available tip */
+.cards-tip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;
+  background:var(--bg-2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  font-size:12px;color:var(--text-3);
+  font-family:'Inter','Noto Sans SC',sans-serif;
+  cursor:pointer;
+  transition:border-color .15s,background .15s;
+  margin-bottom:1.6em;
+}
+.cards-tip:hover{border-color:var(--ann-active-bdr);background:var(--ann-active-bg);color:var(--text)}
+.cards-tip-icon{font-size:14px}
+
 /* ── Responsive ─────────────────────────────────────── */
 @media(max-width:900px){
   .ann-panel{width:min(var(--ann-w),90vw)}
@@ -617,6 +763,26 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
+<!-- Card mode overlay -->
+<div class="card-overlay" id="cardOverlay">
+  <div class="card-hdr">
+    <button class="card-back" onclick="closeCards()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 2L4 7l5 5"/></svg>
+      返回
+    </button>
+    <span class="card-hdr-title" id="cardTitle">情景练习</span>
+    <span class="card-prog" id="cardProg"></span>
+  </div>
+  <div class="card-body">
+    <div class="card-inner" id="cardInner"></div>
+  </div>
+  <div class="card-footer">
+    <button class="card-nav-btn" id="cardPrev" onclick="prevCard()" disabled>← 上一题</button>
+    <div class="card-dots" id="cardDots"></div>
+    <button class="card-nav-btn" id="cardNext" onclick="nextCard()">下一题 →</button>
+  </div>
+</div>
+
 <!-- Right annotation panel -->
 <aside class="ann-panel" id="annPanel">
   <div class="ann-panel-top">
@@ -645,6 +811,9 @@ let fontSize  = +localStorage.getItem('fz') || 15;
 let readSet   = new Set(JSON.parse(localStorage.getItem('rd') || '[]'));
 let searchVer = 0;
 let sbOpen    = true;
+let cardIds   = new Set();
+let curCards  = [];
+let curCardIdx = 0;
 
 // ── Boot ───────────────────────────────────────────────
 applyTheme(localStorage.getItem('theme') || 'light');
@@ -661,12 +830,14 @@ if (localStorage.getItem('sb') === '0') {
 // ── Init ───────────────────────────────────────────────
 async function init() {
   try {
-    const [tocRes, artsRes] = await Promise.all([
+    const [tocRes, artsRes, cardsListRes] = await Promise.all([
       fetch('/api/toc'),
-      fetch('/api/articles')
+      fetch('/api/articles'),
+      fetch('/api/cards/list')
     ]);
     toc      = await tocRes.json();
     flatList = await artsRes.json();
+    cardIds  = new Set(await cardsListRes.json());
     renderToc();
     updateStat();
     const last = +localStorage.getItem('last');
@@ -889,6 +1060,7 @@ async function loadArt(id, scrollTop = true) {
   curId = id;
   curAnnotations = null;
   closeAnnPanel();
+  closeCards();
   localStorage.setItem('last', id);
 
   const vi = toc.findIndex((_, i) =>
@@ -956,14 +1128,21 @@ function renderArticle(md, id, annData) {
   const prev = idx > 0 ? flatList[idx - 1] : null;
   const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
 
-  const metaHtml = annData?.meta ? buildMetaPanel(annData.meta) : '';
-  const tipHtml  = annData?.paragraphs?.length
+  const metaHtml  = annData?.meta ? buildMetaPanel(annData.meta) : '';
+  const tipHtml   = annData?.paragraphs?.length
     ? `<div class="ann-tip">点击段落可在右侧查看注解 · 历史背景 · 小故事</div>`
+    : '';
+  const cardsTipHtml = cardIds.has(id)
+    ? `<div class="cards-tip" onclick="openCards(${id})">
+        <span class="cards-tip-icon">🃏</span>
+        <span>本篇有情景分析练习，点击开始</span>
+      </div>`
     : '';
 
   document.getElementById('artWrap').innerHTML = `
     ${metaHtml}
     ${tipHtml}
+    ${cardsTipHtml}
     <div class="prose">${bodyHtml}</div>
     <nav class="art-nav">
       <button class="nav-btn"${!prev ? ' disabled' : ` onclick="loadArt(${prev.id})"`}>
@@ -1019,6 +1198,67 @@ document.getElementById('artWrap').addEventListener('click', e => {
 
   showAnnPanel(ann);
 });
+
+// ── Card mode ──────────────────────────────────────────
+async function openCards(id) {
+  try {
+    const res = await fetch('/api/cards?id=' + id);
+    curCards   = await res.json();
+    curCardIdx = 0;
+    if (!curCards.length) return;
+    const title = flatList.find(a => a.id === id)?.title || '情景练习';
+    document.getElementById('cardTitle').textContent = title;
+    renderCard();
+    document.getElementById('cardOverlay').classList.add('open');
+  } catch(e) {}
+}
+
+function closeCards() {
+  document.getElementById('cardOverlay').classList.remove('open');
+}
+
+function renderCard() {
+  const card  = curCards[curCardIdx];
+  const total = curCards.length;
+  const idx   = curCardIdx;
+
+  document.getElementById('cardProg').textContent = `${idx + 1} / ${total}`;
+  document.getElementById('cardPrev').disabled = idx === 0;
+  document.getElementById('cardNext').disabled = idx === total - 1;
+
+  const dots = Array.from({length: total}, (_, i) =>
+    `<div class="card-dot${i === idx ? ' active' : ''}"></div>`
+  ).join('');
+  document.getElementById('cardDots').innerHTML = dots;
+
+  document.getElementById('cardInner').innerHTML = `
+    <div class="card-type-badge">${escHtml(card.type || '情景')}</div>
+    <div class="card-scene">
+      <div class="card-scene-label">背景情景</div>
+      ${escHtml(card.scene)}
+    </div>
+    <div class="card-question">${escHtml(card.q)}</div>
+    <div class="card-answer-wrap">
+      <div class="card-answer-placeholder" id="cardAnsPlaceholder" onclick="showAnswer()">
+        <div class="card-show-btn">显示答案</div>
+        <div class="card-show-hint">思考后点击查看分析解法</div>
+      </div>
+      <div class="card-answer" id="cardAnsText">${escHtml(card.a)}</div>
+    </div>`;
+}
+
+function showAnswer() {
+  document.getElementById('cardAnsPlaceholder').style.display = 'none';
+  document.getElementById('cardAnsText').classList.add('revealed');
+}
+
+function nextCard() {
+  if (curCardIdx < curCards.length - 1) { curCardIdx++; renderCard(); }
+}
+
+function prevCard() {
+  if (curCardIdx > 0) { curCardIdx--; renderCard(); }
+}
 
 // ── Meta panel ─────────────────────────────────────────
 function buildMetaPanel(meta) {
@@ -1097,7 +1337,7 @@ document.addEventListener('keydown', e => {
   const idx = flatList.findIndex(a => a.id === curId);
   if (e.key === 'ArrowLeft'  && idx > 0)                   loadArt(flatList[idx-1].id);
   if (e.key === 'ArrowRight' && idx < flatList.length - 1) loadArt(flatList[idx+1].id);
-  if (e.key === 'Escape') closeAnnPanel();
+  if (e.key === 'Escape') { closeAnnPanel(); closeCards(); }
 });
 
 // ── Start ──────────────────────────────────────────────
