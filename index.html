@@ -48,6 +48,8 @@
   --ann-active-bdr: #2563eb;
   --ann-active-bg:  rgba(37,99,235,.04);
   --ann-hover-bg:   rgba(0,0,0,.03);
+  --ann-mark:       rgba(37,99,235,.13);
+  --ann-mark-on:    rgba(37,99,235,.22);
 
   --prog:        #2563eb;
   --prog-dim:    rgba(37,99,235,.15);
@@ -83,6 +85,8 @@
   --ann-border:  #27272a;
   --ann-active-bg: rgba(37,99,235,.08);
   --ann-hover-bg:  rgba(255,255,255,.03);
+  --ann-mark:      rgba(96,165,250,.2);
+  --ann-mark-on:   rgba(96,165,250,.34);
 
   --sb-bg:       #111113;
   --sb-hover:    #1f1f23;
@@ -500,6 +504,51 @@ a{color:inherit;text-decoration:none}
   background:var(--ann-active-bg);
   border-left-color:var(--ann-active-bdr);
 }
+
+/* 句子级注解锚点：从锚点到句末标亮 */
+.ann-span{
+  cursor:pointer;border-radius:2px;
+  background:linear-gradient(transparent 60%,var(--ann-mark) 60%);
+  transition:background .15s;
+}
+.ann-span:hover{background:var(--ann-mark)}
+.ann-span.active{background:var(--ann-mark-on);box-shadow:0 0 0 2px var(--ann-mark-on)}
+.ann-span.bookmarked{box-shadow:inset 0 -2px 0 #f59e0b}
+/* 名词解释 */
+.term{border-bottom:1px dashed var(--text-3);cursor:help}
+.term:hover{border-bottom-color:var(--ann-active-bdr);color:var(--ann-active-bdr)}
+.term-pop{
+  position:fixed;z-index:400;max-width:min(320px,calc(100vw - 24px));
+  background:var(--ann-bg);border:1px solid var(--border);border-radius:8px;
+  box-shadow:var(--shadow-md);padding:10px 13px;
+  font:13px/1.75 'Inter','Noto Sans SC',sans-serif;color:var(--text-2);
+}
+.term-pop b{display:block;color:var(--text);font-weight:600;margin-bottom:2px}
+/* 一句话读懂 + 核心要点 */
+.art-guide{
+  border:1px solid var(--border);border-left:3px solid var(--ann-active-bdr);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:1em;
+  font-family:'Inter','Noto Sans SC',sans-serif;background:var(--bg-2);
+}
+.art-guide-sum{font-size:14.5px;font-weight:600;color:var(--text);line-height:1.7}
+.art-guide-kp{list-style:none;padding:0;margin-top:10px;counter-reset:kp}
+.art-guide-kp li{
+  counter-increment:kp;position:relative;padding-left:24px;
+  font-size:13px;color:var(--text-2);line-height:1.75;margin-bottom:4px;
+}
+.art-guide-kp li::before{
+  content:counter(kp);position:absolute;left:0;top:.25em;
+  width:16px;height:16px;border-radius:50%;background:var(--ann-active-bdr);color:#fff;
+  font-size:10px;line-height:16px;text-align:center;font-weight:600;
+}
+.art-meta-terms{display:grid;gap:8px}
+.art-meta-terms div{font-size:12.5px;color:var(--text-2);line-height:1.7}
+.art-meta-terms b{color:var(--text);font-weight:600;margin-right:6px}
+.prose .prose-fn{
+  font-size:.8em;color:var(--text-3);line-height:1.85;
+  border-top:1px solid var(--border);margin-top:2.5em;padding-top:1.5em;
+}
+.prose .prose-fn p{text-indent:0;margin-bottom:.7em}
 
 /* Bookmark indicator on paragraphs */
 .para-block.bookmarked>p::after{
@@ -997,7 +1046,7 @@ function showAnnPanel(ann) {
 function closeAnnPanel() {
   document.getElementById('annPanel').classList.remove('open');
   curAnnMatch = null;
-  document.querySelectorAll('.para-block.has-ann.active')
+  document.querySelectorAll('.para-block.has-ann.active,.ann-span.active')
     .forEach(el => el.classList.remove('active'));
 }
 
@@ -1045,16 +1094,12 @@ function removeBm(idx) {
 }
 
 function updateBookmarkIndicators() {
-  document.querySelectorAll('.para-block.bookmarked').forEach(el => el.classList.remove('bookmarked'));
+  document.querySelectorAll('.bookmarked[data-ai]').forEach(el => el.classList.remove('bookmarked'));
   if (!curId) return;
   const artBms = bookmarks.filter(b => b.artId === curId);
-  document.querySelectorAll('.para-block.has-ann').forEach(el => {
-    const p = el.querySelector('p');
-    if (!p) return;
-    const txt = p.textContent.trim();
-    if (artBms.some(b => txt.startsWith(b.match))) {
-      el.classList.add('bookmarked');
-    }
+  document.querySelectorAll('[data-ai]').forEach(el => {
+    const ann = curAnnotations?.paragraphs?.[+el.dataset.ai];
+    if (ann && artBms.some(b => b.match === ann.match)) el.classList.add('bookmarked');
   });
 }
 
@@ -1112,7 +1157,7 @@ function renderStats() {
 // ── Share ───────────────────────────────────────────────
 function shareAnnotation() {
   if (!curId || !curAnnMatch) return;
-  const url = location.origin + '/?id=' + curId + '&p=' + encodeURIComponent(curAnnMatch);
+  const url = location.origin + location.pathname + '?id=' + curId + '&p=' + encodeURIComponent(curAnnMatch);
   if (navigator.clipboard) {
     navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
   } else {
@@ -1381,7 +1426,7 @@ async function loadArt(id, scrollTop = true) {
 
 // ── Render article ─────────────────────────────────────
 function renderArticle(md, id, annData) {
-  const parts = md.split(/\n---+\n/);
+  const parts = md.split(/\n-{3,}[ \t]*\n/);
   let bodyHtml = marked.parse(parts[0]);
   if (parts.slice(1).join('\n').trim())
     bodyHtml += `<div class="prose-fn">${marked.parse(parts.slice(1).join('\n'))}</div>`;
@@ -1392,9 +1437,14 @@ function renderArticle(md, id, annData) {
   const prev = idx > 0 ? flatList[idx - 1] : null;
   const next = idx < flatList.length - 1 ? flatList[idx + 1] : null;
 
-  const metaHtml = annData?.meta ? buildMetaPanel(annData.meta) : '';
+  const m = annData?.meta;
+  const guideHtml = m?.summary ? `<div class="art-guide">
+      <div class="art-guide-sum">${escHtml(m.summary)}</div>
+      ${m.keypoints?.length ? `<ol class="art-guide-kp">${m.keypoints.map(k => `<li>${escHtml(k)}</li>`).join('')}</ol>` : ''}
+    </div>` : '';
+  const metaHtml = guideHtml + (m ? buildMetaPanel(m) : '');
   const tipHtml = annData?.paragraphs?.length
-    ? '<div class="ann-tip">点击段落可在右侧查看注解 · 历史背景 · 小故事</div>'
+    ? `<div class="ann-tip">点击<span class="ann-span" style="pointer-events:none">标亮的句子</span>查看注解 · 历史背景${m?.terms?.length ? ' · 点击<span class="term" style="pointer-events:none">虚线名词</span>看解释' : ''}</div>`
     : '';
   const cardsTipHtml = cardIds.has(id)
     ? `<div class="cards-tip" onclick="openCards(${id})">
@@ -1423,39 +1473,99 @@ function renderArticle(md, id, annData) {
   document.title = (h1 ? h1.textContent : '文章') + ' — 读毛选';
 }
 
-// ── Inject paragraph affordance ────────────────────────
-function injectAnnotations(html, annData) {
-  if (!annData?.paragraphs?.length) return html;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
-  const container = doc.body.firstChild;
-
-  container.querySelectorAll('p').forEach(p => {
-    const txt = p.textContent.trim();
-    const ann = annData.paragraphs.find(a => txt.startsWith(a.match));
-    if (!ann) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'para-block has-ann';
-    p.parentNode.insertBefore(wrapper, p);
-    wrapper.appendChild(p);
-  });
-
-  return container.innerHTML;
+// ── Inject annotations ─────────────────────────────────
+// 注解的 match 是原文中的一段逐字文字（锚点），标亮从锚点到该句末尾。
+// 源文本常把多个自然段合成一个长段，所以按句子而不是按段落定位。
+function sentenceEnd(txt, from) {
+  const re = /[。！？!?]/g; re.lastIndex = from;
+  const m = re.exec(txt);
+  let end = m ? m.index + 1 : txt.length;
+  while (end < txt.length && '”」』’）)'.includes(txt[end])) end++;
+  return end;
 }
+function textRange(doc, el, start, end) {
+  const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const range = doc.createRange();
+  let pos = 0, n, started = false;
+  while ((n = walker.nextNode())) {
+    const len = n.nodeValue.length;
+    if (!started && start <= pos + len) { range.setStart(n, start - pos); started = true; }
+    if (started && end <= pos + len) { range.setEnd(n, end - pos); return range; }
+    pos += len;
+  }
+  return null;
+}
+function markTerms(doc, root, terms) {
+  const order = terms.map((t, i) => [t.t, i]).sort((a, b) => b[0].length - a[0].length);
+  for (const [word, ti] of order) {
+    const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: n => n.parentElement.closest('.term,.prose-fn,h1,h2,h3') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+    });
+    let n;
+    while ((n = walker.nextNode())) {
+      const k = n.nodeValue.indexOf(word);
+      if (k < 0) continue;
+      const r = doc.createRange(); r.setStart(n, k); r.setEnd(n, k + word.length);
+      const sp = doc.createElement('span'); sp.className = 'term'; sp.dataset.ti = ti;
+      r.surroundContents(sp);
+      break;
+    }
+  }
+}
+function injectAnnotations(html, annData) {
+  const paras = annData?.paragraphs || [], terms = annData?.meta?.terms || [];
+  if (!paras.length && !terms.length) return html;
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html');
+  const root = doc.body.firstChild;
+  const ps = [...root.querySelectorAll('p')].filter(p => !p.closest('.prose-fn'));
+  paras.forEach((ann, i) => {
+    for (const p of ps) {
+      const txt = p.textContent, pos = txt.indexOf(ann.match);
+      if (pos < 0) continue;
+      const r = textRange(doc, p, pos, sentenceEnd(txt, pos + ann.match.length));
+      if (r) {
+        const sp = doc.createElement('span'); sp.className = 'ann-span'; sp.dataset.ai = i;
+        sp.appendChild(r.extractContents()); r.insertNode(sp);
+      }
+      break;
+    }
+  });
+  if (terms.length) markTerms(doc, root, terms);
+  return root.innerHTML;
+}
+
+function activateAnn(el) {
+  document.querySelectorAll('.para-block.has-ann.active,.ann-span.active')
+    .forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  const ann = curAnnotations?.paragraphs?.[+el.dataset.ai];
+  if (ann) showAnnPanel(ann);
+}
+
+// 名词解释浮层
+let termPop = null;
+function hideTermPop() { if (termPop) { termPop.remove(); termPop = null; } }
+function showTermPop(el) {
+  hideTermPop();
+  const t = curAnnotations?.meta?.terms?.[+el.dataset.ti];
+  if (!t) return;
+  termPop = document.createElement('div');
+  termPop.className = 'term-pop';
+  termPop.innerHTML = `<b>${escHtml(t.t)}</b>${escHtml(t.d)}`;
+  document.body.appendChild(termPop);
+  const r = el.getBoundingClientRect(), w = termPop.offsetWidth, h = termPop.offsetHeight;
+  termPop.style.left = Math.max(12, Math.min(r.left, innerWidth - w - 12)) + 'px';
+  termPop.style.top = (r.bottom + 6 + h > innerHeight ? r.top - h - 6 : r.bottom + 6) + 'px';
+}
+document.addEventListener('click', e => { if (termPop && !e.target.closest('.term,.term-pop')) hideTermPop(); });
+document.getElementById('main').addEventListener('scroll', hideTermPop, { passive: true });
 
 // Delegated click handler
 document.getElementById('artWrap').addEventListener('click', e => {
-  const p = e.target.closest('p');
-  if (!p) return;
-  const wrapper = p.parentElement;
-  if (!wrapper?.classList.contains('has-ann')) return;
-  const txt = p.textContent.trim();
-  const ann = curAnnotations?.paragraphs?.find(a => txt.startsWith(a.match));
-  if (!ann) return;
-  document.querySelectorAll('.para-block.has-ann.active')
-    .forEach(el => el.classList.remove('active'));
-  wrapper.classList.add('active');
-  showAnnPanel(ann);
+  const term = e.target.closest('.term');
+  if (term && !term.closest('.ann-tip')) { showTermPop(term); return; }
+  const el = e.target.closest('.ann-span[data-ai]') || e.target.closest('.para-block.has-ann[data-ai]');
+  if (el) activateAnn(el);
 });
 
 // ── Card mode ──────────────────────────────────────────
@@ -1530,7 +1640,7 @@ function buildMetaPanel(meta) {
   return `<div class="art-meta" id="artMetaPanel">
     <div class="art-meta-hdr" onclick="toggleMeta()">
       <span class="art-meta-icon">◉</span>
-      <span class="art-meta-title">写作背景 · 党史意义 · 历史事件</span>
+      <span class="art-meta-title">写作背景 · 党史意义 · 历史事件${meta.terms?.length ? ' · 名词解释' : ''}</span>
       <span class="art-meta-arrow">▶</span>
     </div>
     <div class="art-meta-body">
@@ -1543,6 +1653,10 @@ function buildMetaPanel(meta) {
         <div class="art-meta-sect-text">${escHtml(meta.party_history)}</div>
       </div>` : ''}
       ${evHtml}
+      ${meta.terms?.length ? `<div class="art-meta-sect">
+        <div class="art-meta-sect-label">名词解释</div>
+        <div class="art-meta-terms">${meta.terms.map(t => `<div><b>${escHtml(t.t)}</b>${escHtml(t.d)}</div>`).join('')}</div>
+      </div>` : ''}
     </div>
   </div>`;
 }
@@ -1557,22 +1671,14 @@ function checkUrlParams() {
   const pid = +params.get('id');
   const pmatch = params.get('p');
   if (pid && pid === curId && pmatch && curAnnotations?.paragraphs) {
-    const ann = curAnnotations.paragraphs.find(a => a.match === pmatch);
-    if (ann) {
+    const ai = curAnnotations.paragraphs.findIndex(a => a.match === pmatch);
+    if (ai >= 0) {
       setTimeout(() => {
-        const blocks = document.querySelectorAll('.para-block.has-ann');
-        for (const block of blocks) {
-          const p = block.querySelector('p');
-          if (p && p.textContent.trim().startsWith(pmatch)) {
-            block.classList.add('active');
-            p.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            showAnnPanel(ann);
-            break;
-          }
-        }
+        const el = document.querySelector(`[data-ai="${ai}"]`);
+        if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); activateAnn(el); }
       }, 200);
     }
-    history.replaceState(null, '', '/');
+    history.replaceState(null, '', location.pathname);
   }
 }
 
